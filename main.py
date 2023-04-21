@@ -1,74 +1,28 @@
 import datetime as dt, os, sys
 import yml.mk_yml as mkYml
-# TODO : Embulk 환경변수 셋팅 (Home, Log 디렉토리)
+import conn.oracle as oraConn
+import conn.mysql as myConn
+# TODO : Oracle Home, Mysql Home, Embulk 환경변수 셋팅 (Home, Log 디렉토리)
 
+global oraHomePath
+global myHomePath
+global emHomePath
 
 def main():
-    # YML 파일 생성
-    # -- 1. yml 파일 생성할 경로 입력
-    # -- 2. 날짜_시간.yml 포맷으로 생성
-    ymlPath = input("Input the path to create the yml file : ")
-    
-    date = dt.datetime.now()
-    ymlPath += '\\' + date.strftime("%Y%m%d_%H%M%S") + '.yml'
-    print('Path to the created file : ' + ymlPath)
-    
-    # -- 파일에 데이터 입력
-    f = open(ymlPath, 'w')
-    # -- mk_yml 파일 실행
-    srcYmlConfig, tgtYmlConfig = mkYml.main()
+    os.putenv('NLS_LANG', '.UTF8')
+    os.putenv('TNS_ADMIN', r'C:\app\client\product\19.0.0\client_1\network\admin')
+    # Home 경로 테스트용으로 지정 -- 추후 입력 받는 방식으로 수정
+    oraHomePath = r"/app/oracle/product/19c/dbhome_1"
+    myHomePath = r"/app/mysql"
+    emHomePath = r"C:\embulk"
 
-    # -- 입력 정보 출력
-    print('')
-    print('*********************************************************')
-    print('Check Source Database Infomation')
-    print('*********************************************************')
-    print(f'type: {srcYmlConfig.type}')
-    print(f'driverPath: {srcYmlConfig.driverPath}')
-    print(f'host: {srcYmlConfig.host}')
-    print(f'port: {srcYmlConfig.port}')
-    print(f'tnsPath: {srcYmlConfig.tnsPath}')
-    print(f'tnsName: {srcYmlConfig.tnsName}')
-    print(f'dbName: {srcYmlConfig.db}')
-    print(f'user: {srcYmlConfig.user}')
-    print(f'pw: {srcYmlConfig.pw}')
-    print('')
-    print('*********************************************************')
-    print('Check Target Database Infomation')
-    print('*********************************************************')
-    print(f'type: {tgtYmlConfig.type}')
-    print(f'driverPath: {tgtYmlConfig.driverPath}')
-    print(f'host: {tgtYmlConfig.host}')
-    print(f'port: {tgtYmlConfig.port}')
-    print(f'tnsPath: {tgtYmlConfig.tnsPath}')
-    print(f'tnsName: {tgtYmlConfig.tnsName}')
-    print(f'dbName: {tgtYmlConfig.db}')
-    print(f'user: {tgtYmlConfig.user}')
-    print(f'pw: {tgtYmlConfig.pw}')
-    print('')
+    # mk_yml 파일 실행
+    srcConfig, tgtConfig = mkYml.main()
 
-    # -- yml 파일에 저장 - SOURCE DB INFORMATION 
-    f.write(f'in:\n')
-    f.write(f'type: {srcYmlConfig.type}\n')
-    f.write(f'driver_path: {srcYmlConfig.driverPath}\n')
-    f.write(f'tns_admin_path: {srcYmlConfig.tnsPath}\n')
-    f.write(f'net_service_name: {srcYmlConfig.tnsName}\n')
-    f.write(f'host: {srcYmlConfig.host}\n')
-    f.write(f'port: {srcYmlConfig.port}\n')
-    f.write(f'database: {srcYmlConfig.db}\n')
-    f.write(f'user: {srcYmlConfig.user}\n')
-    f.write(f'password: {srcYmlConfig.pw}\n')
-
-    # -- yml 파일에 저장 - TARGET DB INFORMATION 
-    f.write(f'\nout:\n')
-    f.write(f'type: {tgtYmlConfig.type}\n')
-    f.write(f'host: {tgtYmlConfig.host}\n')
-    f.write(f'port: {tgtYmlConfig.port}\n')
-    f.write(f'database: {tgtYmlConfig.db}\n')
-    f.write(f'user: {tgtYmlConfig.user}\n')
-    f.write(f'password: {tgtYmlConfig.pw}\n')
-    
-    f.close()
+    # Source (oracle) DB 접속
+    srcConn = oraConn.startConn(srcConfig)
+    if srcConn:
+        print ('\n\n' + srcConfig.dbName + " Connected.")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,371 @@
+##서비스명 =
+##  (DESCRIPTION =
+##    (ADDRESS_LIST=
+##         (LOAD_BALANCE=ON)
+##     (FAILOVER=ON)
+##    (ADDRESS = (PROTOCOL = TCP)(HOST = vip1)(PORT = 1521))
+##    (ADDRESS = (PROTOCOL = TCP)(HOST = vip2)(PORT = 1521)))
+##    (CONNECT_DATA =
+##      (SERVICE_NAME = 서비스명)
+##      (FAILOVER_MODE=(TYPE=SELECT)(METHOD=BASIC))
+##    )
+##)
+
+
+SINGLE = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 51.51.102.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = TEST01)
+    )
+  )
+
+RACTEST =
+  (DESCRIPTION =
+   (LOAD_BALANCE=off)
+   (FAIL_OVER=on)
+   (ENABLE=broken)
+    (ADDRESS_LIST =
+      (ADDRESS=(PROTOCOL=tcp)(HOST=51.51.102.13)(PORT=1521))
+      (ADDRESS=(PROTOCOL=tcp)(HOST=51.51.102.14)(PORT=1521))
+    )
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = RAC)
+     (FAILOVER_MODE=(TYPE=SELECT)(METHOD=BASIC))
+    )
+  )
+
+
+#RAC1 =
+#  (DESCRIPTION =
+#    (ADDRESS_LIST =
+#      (ADDRESS=(PROTOCOL=tcp)(HOST=51.51.14.23)(PORT=1521))
+#    )
+#    (CONNECT_DATA =
+#      (SERVER = DEDICATED)
+#      (SERVICE_NAME = RAC)
+#    )
+#  )
+
+
+#RAC2 =
+#  (DESCRIPTION =
+#    (ADDRESS_LIST =
+#      (ADDRESS=(PROTOCOL=tcp)(HOST=51.51.14.24)(PORT=1521))
+#    )
+#    (CONNECT_DATA =
+#      (SERVER = DEDICATED)
+#      (SERVICE_NAME = RAC)
+#    )
+#  )
+
+##### 포스코 인터 #####
+EDW = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.82.74)(PORT = 1522))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = EDW)
+    )
+  )
+
+GHR = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.82.75)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = GHR)
+    )
+  )
+  
+SCM = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.82.75)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = SCM)
+    )
+  )
+  
+WEBDB = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.82.75)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = WEBDB)
+    )
+  )
+  
+WEBMAIL = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.82.81)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = WEBMAIL)
+    )
+  )
+
+D_EDW = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = EDW)
+    )
+  )
+  
+
+D_GHR = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = GHR)
+    )
+  )
+  
+D_SCM = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = SCM)
+    )
+  )
+  
+D_WEBDB = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = WEBDB)
+    )
+  )
+  
+D_MAIL = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = WEBMAIL)
+    )
+  )
+
+
+L_EDW = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = L_EDW)
+    )
+  )
+  
+
+L_GHR = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = L_GHR)
+    )
+  )
+  
+L_SCM = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = L_SCM)
+    )
+  )
+  
+L_WEBDB = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = L_WEBDB)
+    )
+  )
+  
+L_MAIL = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = L_MAIL)
+    )
+  )
+  
+M_EDW = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = M_EDW)
+    )
+  )
+  
+
+M_GHR = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = M_GHR)
+    )
+  )
+  
+M_SCM = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = M_SCM)
+    )
+  )
+  
+M_WEBDB = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = M_WEBDB)
+    )
+  )
+  
+M_MAIL = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.101)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = M_MAIL)
+    )
+  )
+  
+  
+D_PMARK = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.102)(PORT = 1524))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = PMARK)
+    )
+  )
+  
+D_PHRM = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.102)(PORT = 1522))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = PHRM)
+    )
+  )
+  
+  
+D_PEIS = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.102)(PORT = 1523))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = PEIS)
+    )
+  )
+  
+D_PMARK3 = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.102)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = PMARK3)
+    )
+  )
+  
+D_ESALES = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.79.104)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = ESALES)
+    )
+  )
+
+
+### 소니코리아 ###
+
+IPASSDB = 
+(DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 43.76.45.66)(PORT = 1525))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = IPASSDB)
+    )
+  )
+
+
+### 용평리조트 ###
+
+IYESDB1 =
+  (DESCRIPTION =
+   (LOAD_BALANCE=off)
+   (FAILOVER=on)
+   (ENABLE=broken)
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 150.10.10.11)(PORT = 1521))
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 150.10.10.12)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = iyesdb)
+#      (INSTANCE_NAME = iyesdb1)
+     (FAILOVER_MODE=(TYPE=SELECT)(METHOD=BASIC))
+
+    )
+  )
+
+IYESDB2 =
+  (DESCRIPTION =
+   (LOAD_BALANCE=off)
+   (FAILOVER=on)
+   (ENABLE=broken)
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 150.10.10.11)(PORT = 1521))
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 150.10.10.12)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = iyesdb)
+#      (INSTANCE_NAME = iyesdb1)
+     (FAILOVER_MODE=(TYPE=SELECT)(METHOD=BASIC))
+
+    )
+  )
+
