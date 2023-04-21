@@ -70,39 +70,10 @@ class YmlConfig:
         print(f'maxThreads: {self.maxThreads}')
         print(f'minOutputTasks: {self.minOutputTasks}')
 
-    def configOracle(self):
-         #driverPath = input('Input the JDBC driver Path : ')
-
-        while True:
-            print('1. Direct Connection \n2. Connection using TNS')
-            connType = input('Enter number of connection type : ')
-
-            if connType == '1':
-                host = input('Input host IP : ')
-                self.setHost(host)
-                port = input('Input port number : ')
-                self.setPort(port)
-                break
-            
-            if connType == '2':
-                tnsName = input('Input TNS name : ')
-                self.setTnsName(tnsName)
-                break
-            else:
-                print('\nEnter answer again !!\n')
-
-        dbName = input('Input name of database : ')
-        self.setDbName(dbName)
-        user = input('Input user to connect database : ')
-        self.setUser(user)
-        passwd = input('Input password of user : ')
-        self.setpasswd(passwd)
-        maxThreads = input('Input maximum number of threads (default:1) : ') or 1
-        self.setMaxThreads(maxThreads)
-        minOutputTasks = input('Input minimum number of output tasks (default:1) : ') or 1
-        self.setMinOutputTasks(minOutputTasks)
-
-    def configOthers(self):
+    def execConfig(self):
+        type = input('Input the type : ')
+        self.setType(type)
+        #driverPath = input('Input the JDBC driver Path : ')
         host = input('Input host IP : ')
         self.setHost(host)
         port = input('Input port number : ')
@@ -117,16 +88,6 @@ class YmlConfig:
         self.setMaxThreads(maxThreads)
         minOutputTasks = input('Input minimum number of output tasks (default:1) : ') or 1
         self.setMinOutputTasks(minOutputTasks)
-
-    def execConfig(self):
-        type = input('Input the type : ')
-        self.setType(type)
-
-        if type.lower() == 'oracle':
-            self.configOracle()
-
-        elif type.lower() == 'mysql':
-            self.configOthers()
            
         # TODO: 이관대상 테이블/스키마/쿼리 어떻게 입력할지 고민
     
