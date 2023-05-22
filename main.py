@@ -19,10 +19,24 @@ def main():
     # mk_yml 파일 실행
     srcConfig, tgtConfig = mkYml.main()
 
-    # Source (oracle) DB 접속
+    # SOURCE (oracle) DB 접속
+    # TODO: type에 따라 oracle, mysql 접속 분기
     srcConn = oraConn.startConn(srcConfig)
     if srcConn:
         print ('\n\n' + srcConfig.dbName + " Connected.")
+
+    # SOURCE DB에서 이관 대상 테이블 정보 수집  
+    
+
+    # ORACLE TO MYSQL 시 메타 변환
+
+    # embulk 실행
+    os.system("embulk")
+
+    # 데이터 이관
+
+    # 데이터 검증
+    
 
 if __name__ == "__main__":
     main()

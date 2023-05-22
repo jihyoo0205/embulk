@@ -3,7 +3,6 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
 def startConn(src):
-    #co.init_oracle_client(config_dir=r"C:\app\client\product\19.0.0\client_1\network\admin")
     try:
         # username sys 면 sysdba 모드
         if src.user.upper() == 'SYS':
