@@ -1,32 +1,52 @@
 import datetime as dt, os, sys
-import yml.mk_yml as mkYml
+import make.mk_yml as mkYml
 import conn.oracle as oraConn
 import conn.mysql as myConn
 # TODO : Oracle Home, Mysql Home, Embulk 환경변수 셋팅 (Home, Log 디렉토리)
 
-global oraHomePath
-global myHomePath
-global emHomePath
+def startOraConn(config) :
+    conn = oraConn.startConn(config)
+    if conn:
+        print ('\n\n' + config.configItem['database'] + " Connected.")
+    
+    return conn
 
 def main():
     os.putenv('NLS_LANG', '.UTF8')
-    os.putenv('TNS_ADMIN', r'C:\app\client\product\19.0.0\client_1\network\admin')
-    # Home 경로 테스트용으로 지정 -- 추후 입력 받는 방식으로 수정
-    oraHomePath = r"/app/oracle/product/19c/dbhome_1"
-    myHomePath = r"/app/mysql"
-    emHomePath = r"C:\embulk"
 
     # mk_yml 파일 실행
     srcConfig, tgtConfig = mkYml.main()
 
     # SOURCE (oracle) DB 접속
+    srcConn = startOraConn(srcConfig)
+    
+    # TODO: TARGET 접속 확인
     # TODO: type에 따라 oracle, mysql 접속 분기
-    srcConn = oraConn.startConn(srcConfig)
-    if srcConn:
-        print ('\n\n' + srcConfig.dbName + " Connected.")
+    if tgtConfig.configItem['type'].upper() == 'ORACLE':
+        tgtConn = startOraConn(tgtConfig)
+    
+    elif tgtConfig.configItem['type'].upper() == 'MYSQL':
+        pass
 
     # SOURCE DB에서 이관 대상 테이블 정보 수집  
+    # SOURCE DB CURSOR 생성
+    srcCur = srcConn.cursor()
+
+
+    # -- 테이블 정보
+    tabSql = """
+            select OWNER, TABLE_NAME, PARTITIONED
+              from DBA_TABLES
+             where owner not in ('SYS','SYSTEM')
+            """
     
+    # -- 테이블 컬럼 정보
+    tabColSql = """
+                """
+    
+    # -- 인덱스 정보 --> DDL로 추출?
+    
+    # -- 파티션 정보 --> 트리 형태로 아래에 표시
 
     # ORACLE TO MYSQL 시 메타 변환
 

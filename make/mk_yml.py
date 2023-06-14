@@ -1,8 +1,13 @@
 # Embulk yml 파라미터
 # oracle : https://www.rubydoc.info/gems/embulk-input-oracle/0.10.1
-# mysql  :
-import datetime as dt, sys, os
+#          https://www.rubydoc.info/gems/embulk-output-oracle/0.8.7
+# mysql  : 
+import datetime as dt
+import sys
+import os
+
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+import module.common as cm
 
 class YmlConfig:
     def __init__(self):
@@ -10,15 +15,13 @@ class YmlConfig:
         self.configItem = {}
 
         self.table = []
-        self.schema = ''
         self.query = ''
-        self.where = ''
-        self.orderby = ''
 
         self.setDriverPath()
 
     def setDriverPath(self):
-        self.configItem = {'driver_path' : r"C:\app\client\product\19.0.0\client_1\jdbc\lib\ojdbc8.jar"}
+        # TODO: type -> oracle / mysql 따라 jdbc 경로 따로 지정
+        self.configItem = {'driver_path' : fr"{cm.ROOT_PATH}\env\lib\ojdbc8.jar"}
     
     def setType(self, type):
         self.configItem['type'] = type
@@ -38,8 +41,10 @@ class YmlConfig:
     def setDbName(self,dbName):
         self.configItem['database'] = dbName
     
-    def setQuery(self, query):
-        self.configItem['query'] = query
+    # TODO: 컬럼 선택지는 나중에
+    def setQuery(self, schema, table):
+        self.query = f"\"select * from {schema}.{table}\""
+        self.configItem['query'] = self.query
     
     def setTable(self, tableList):
         item = tableList.split(',')
@@ -52,6 +57,7 @@ class YmlConfig:
     def setMinOutputTasks(self, minOutputTasks):
         self.execItem['min_output_tasks'] = minOutputTasks
 
+    # GUI면 필요없음
     def execConfig(self):
         type = input('Input the type : ')
         self.setType(type)
@@ -65,15 +71,15 @@ class YmlConfig:
         self.setUser(user)
         passwd = input('Input password of user : ')
         self.setpasswd(passwd)
-        table = input('Input list of tables(ex: schema.a, schema.b, schema.c ..) : ')
+        table = input('Input list of tables(ex: schema.a, schema.b ..) : ')
         self.setTable(table)
-        maxThreads = input('Input maximum number of threads (default:1) : ') or 1
+        maxThreads = input('Input maximum number of threads (default: 1) : ') or 1
         self.setMaxThreads(maxThreads)
-        minOutputTasks = input('Input minimum number of output tasks (default:1) : ') or 1
+        minOutputTasks = input('Input minimum number of output tasks (default: 1) : ') or 1
         self.setMinOutputTasks(minOutputTasks)
     
     
-def main():
+def main() -> YmlConfig:
     # SOURCE, TARGET Config 정보 변수
     srcYmlConfig = YmlConfig()
     tgtYmlConfig = YmlConfig()
@@ -87,18 +93,16 @@ def main():
     print('\n*********************************************************')
     print('Input Target Database Information')
     print('*********************************************************\n\n')
-    #tgtYmlConfig.execConfig()
+    tgtYmlConfig.execConfig()
 
-    # yml 파일 생성할 경로 입력
-    createdPath = input("Input the path to create the yml file : ")
-
+    # yml 파일 저장할 디렉토리 없으면 생성
+    cm.createDir(cm.ROOT_PATH + r'\files\yml')
     # 이관 대상 테이블 개수만큼 yml 파일 생성
     for i in srcYmlConfig.table :
-        ymlPath = createdPath
         # 날짜_테이블명.yml 포맷으로 생성
+        ymlPath = fr'{cm.ROOT_PATH}\files\yml'
         date = dt.datetime.now()
         ymlPath += '\\' + i + '_' + date.strftime("%Y%m%d") + '.yml'
-        print('Path to the created file : ' + ymlPath)  
 
         # 파일 Open
         f = open(ymlPath, 'w')
@@ -107,22 +111,20 @@ def main():
         f.write(f'exec:\n')
         for k, v in srcYmlConfig.execItem.items():
             f.write(f'  {k}: {v}\n')
+        
+        # schema.table_name -> schema와 table명 분리 // GUI면 필요 없음
+        tmpTable = i.split(".")
+        srcYmlConfig.setQuery(tmpTable[0], tmpTable[1])
 
         # yml 파일 작성 - SOURCE DB 정보 
         f.write(f'in:\n')
         for k, v in srcYmlConfig.configItem.items():
             f.write(f'  {k}: {v}\n')
         
-        # schema.table_name -> schema와 table명 분리
-        tmpTable = i.split(".")
-        f.write(f'  schema: {tmpTable[0]}\n')
-        f.write(f'  table: {tmpTable[1]}\n')
-        
         # yml 파일 작성 - TARGET DB 정보 
         f.write(f'\nout:\n')
-        for k, v in tgtYmlConfig.configItem:
+        for k, v in tgtYmlConfig.configItem.items():
             f.write(f'  {k}: {v}\n')
-        # target 테이블?
         
         f.close()
 

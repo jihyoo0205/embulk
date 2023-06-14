@@ -5,18 +5,18 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 def startConn(src):
     try:
         # username sys 면 sysdba 모드
-        if src.user.upper() == 'SYS':
+        if src.configItem['user'].upper() == 'SYS':
             conn = co.connect(
-                user = src.user, 
-                password = src.passwd, 
-                dsn = src.host+":"+src.port+"/"+src.dbName,
+                user = src.configItem['user'], 
+                password = src.configItem['passwd'], 
+                dsn = src.configItem['host']+":"+src.configItem['port']+"/"+src.configItem['database'],
                 mode = co.SYSDBA,
                 threaded = True)
         else:
             conn = co.connect(
-                user = src.user, 
-                password = src.passwd, 
-                dsn = src.host+":"+src.port+"/"+src.dbName,
+                user = src.configItem['user'], 
+                password = src.configItem['passwd'], 
+                dsn = src.configItem['host']+":"+src.configItem['port']+"/"+src.configItem['database'],
                 threaded = True)
         
     except co.DatabaseError as e:
