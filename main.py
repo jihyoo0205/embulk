@@ -2,6 +2,10 @@ import datetime as dt, os, sys
 import make.mk_yml as mkYml
 import conn.oracle as oraConn
 import conn.mysql as myConn
+import ui.main_manager as mainUi
+from PyQt5 import QtWidgets
+from PyQt5 import uic
+
 # TODO : Oracle Home, Mysql Home, Embulk 환경변수 셋팅 (Home, Log 디렉토리)
 
 def startOraConn(config) :
@@ -13,6 +17,10 @@ def startOraConn(config) :
 
 def main():
     os.putenv('NLS_LANG', '.UTF8')
+
+    app = QtWidgets.QApplication(sys.argv)
+    w = mainUi.UiMainWindow()
+    
 
     # mk_yml 파일 실행
     srcConfig, tgtConfig = mkYml.main()
@@ -34,15 +42,8 @@ def main():
 
 
     # -- 테이블 정보
-    tabSql = """
-            select OWNER, TABLE_NAME, PARTITIONED
-              from DBA_TABLES
-             where owner not in ('SYS','SYSTEM')
-            """
     
     # -- 테이블 컬럼 정보
-    tabColSql = """
-                """
     
     # -- 인덱스 정보 --> DDL로 추출?
     
