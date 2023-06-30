@@ -5,9 +5,9 @@
 import datetime as dt
 import sys
 import os
-
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import module.common as cm
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
 
 class YmlConfig:
     def __init__(self):
@@ -45,7 +45,7 @@ class YmlConfig:
     def setQuery(self, schema, table):
         self.query = f"\"select * from {schema}.{table}\""
         self.configItem['query'] = self.query
-    
+
     def setTable(self, tableList):
         item = tableList.split(',')
         for i in item:
@@ -77,8 +77,22 @@ class YmlConfig:
         self.setMaxThreads(maxThreads)
         minOutputTasks = input('Input minimum number of output tasks (default: 1) : ') or 1
         self.setMinOutputTasks(minOutputTasks)
-    
-    
+
+def makeQuery() -> str:
+    cols = input('columns: ')
+    owner = input('owner: ')
+    table = input('tables: ')
+    query = input('query: ') or None
+
+    # 쿼리를 직접 입력받지 않으면, 선택한 객체로 구성
+    if query is None:
+        if cols is None:
+            cols = "*"
+        query = f"\"select {cols} from {owner}.{table}\""
+
+    # 쿼리를 직접 입력받으면, 수정하지 않고 그대로 리턴
+    return query
+
 def main() -> YmlConfig:
     # SOURCE, TARGET Config 정보 변수
     srcYmlConfig = YmlConfig()
@@ -92,7 +106,7 @@ def main() -> YmlConfig:
 
     print('\n*********************************************************')
     print('Input Target Database Information')
-    print('*********************************************************\n\n')
+    print('*********************************************************\n')
     tgtYmlConfig.execConfig()
 
     # yml 파일 저장할 디렉토리 없으면 생성

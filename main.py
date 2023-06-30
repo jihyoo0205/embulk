@@ -3,8 +3,7 @@ import make.mk_yml as mkYml
 import conn.oracle as oraConn
 import conn.mysql as myConn
 import ui.main_manager as mainUi
-from PyQt5 import QtWidgets
-from PyQt5 import uic
+from PySide2.QtWidgets import *
 
 # TODO : Oracle Home, Mysql Home, Embulk 환경변수 셋팅 (Home, Log 디렉토리)
 
@@ -18,9 +17,8 @@ def startOraConn(config) :
 def main():
     os.putenv('NLS_LANG', '.UTF8')
 
-    app = QtWidgets.QApplication(sys.argv)
-    w = mainUi.UiMainWindow()
-    
+    # Main Window 실행
+    mainUi.exec()
 
     # mk_yml 파일 실행
     srcConfig, tgtConfig = mkYml.main()
@@ -44,8 +42,6 @@ def main():
     # -- 테이블 정보
     
     # -- 테이블 컬럼 정보
-    
-    # -- 인덱스 정보 --> DDL로 추출?
     
     # -- 파티션 정보 --> 트리 형태로 아래에 표시
 
