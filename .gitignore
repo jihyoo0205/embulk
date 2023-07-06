@@ -37,3 +37,4 @@ env/Lib/site-packages/shiboken2/files.dir/shibokensupport/signature/lib/__pycach
 make/__pycache__/mk_yml.cpython-310.pyc
 module/__pycache__/common.cpython-310.pyc
 ui/__pycache__/main_manager.cpython-310.pyc
+env/pyvenv.cfg
