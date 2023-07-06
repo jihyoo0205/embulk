@@ -38,3 +38,6 @@ make/__pycache__/mk_yml.cpython-310.pyc
 module/__pycache__/common.cpython-310.pyc
 ui/__pycache__/main_manager.cpython-310.pyc
 env/pyvenv.cfg
+env/Scripts/activate.bat
+env/Scripts/activate
+*.pyc
