@@ -136,22 +136,6 @@ class MainWindow(QObject):
                 srcTreeList.takeTopLevelItem(index)
 
 
-
-    def clickMoveItem(self):
-        sender = self.sender()
-        if self.pbPlus == sender:
-            srcTreeList = self.treeSrcTab
-            tgtTreeList = self.treeMigTab
-        else:
-            srcTreeList = self.treeMigTab
-            tgtTreeList = self.treeSrcTab
-
-
-        item = srcTreeList.takeTopLevelItem(srcTreeList.currentColumn())
-        root = QTreeWidget.invisibleRootItem(tgtTreeList)
-        root.addChild(item)
-
-
 def exec():
     app = QApplication(sys.argv)
     form = MainWindow(UI_FILE_PATH)
