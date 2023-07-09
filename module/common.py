@@ -36,3 +36,12 @@ def getIndDdl():
                  FROM DUAL """
 
     return sql
+
+def getTblList():
+    sql = """SELECT a.OWNER, a.TABLE_NAME, b.PARTITION_NAME
+            FROM ALL_TABLES a
+            LEFT JOIN ALL_TAB_PARTITIONS b
+            ON b.TABLE_OWNER = a.OWNER AND b.TABLE_NAME = a.TABLE_NAME
+            ORDER BY a.OWNER, a.TABLE_NAME, b.PARTITION_NAME """
+
+    return sql

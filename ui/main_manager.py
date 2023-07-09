@@ -9,6 +9,7 @@ from PySide2.QtUiTools import QUiLoader
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import module.common as cm
+import cx_Oracle
 
 UI_FILE_PATH = fr"{cm.ROOT_PATH}\ui\main.ui"
 
@@ -20,9 +21,115 @@ class MainWindow(QObject):
         loader = QUiLoader()
         self.window = loader.load(uiFile)
         uiFile.close()
+
+        # ================= 접속 정보 입력 및 접속 버튼 [START] ==================================
+
+        # UI에 연결할 변수를 선언
+        self.le_ip = self.__bindQLineEdit('lineEditSrcHost')
+        self.le_port = self.__bindQLineEdit('lineEditSrcPort')
+        self.le_sid = self.__bindQLineEdit('lineEditSrcDB')
+        self.le_id = self.__bindQLineEdit('lineEditSrcUser')
+        self.le_pw = self.__bindQLineEdit('lineEditSrcPasswd')
+        self.le_pw.setEchoMode(QLineEdit.Password)                          # 패스워드 마스킹
+        self.btn_connect = self.__bindQPushButton('pushButtonSrcTestConn')
+        self.btn_connect = self.__bindQPushButton('pushButtonSrcConn')
+
+        # 버튼 클릭 시 실행될 함수를 연결
+        self.btn_test_conn = self.__bindQPushButton('pushButtonSrcTestConn')
+        self.btn_test_conn.clicked.connect(self.__testConnDb)
+
+        self.btn_connect = self.__bindQPushButton('pushButtonSrcConn')
+        self.btn_connect.clicked.connect(self.__ConnDb)
+
+        # ================= 접속 정보 입력 및 접속 버튼 [END] ==================================
+
+        # 윈도우를 화면에 표시
         self.setup_ui()
         self.window.show()
     
+    # ================= 접속 및 테이블리스트 추가 [START] ==================================
+    def __testConnDb(self):
+        # 입력된 오라클 정보를 매핑
+        user_id = self.le_id.text()
+        user_pw = self.le_pw.text()
+        ip = self.le_ip.text()
+        port = self.le_port.text()
+        sid = self.le_sid.text()
+
+        try:
+            # 데이터베이스 연결 정보를 설정
+            dsn = cx_Oracle.makedsn(ip, port, sid)
+            conn = cx_Oracle.connect(user_id, user_pw, dsn)
+
+            # 성공 텍스트 팝업
+            QMessageBox.information(
+                self.window, 'Message',
+                '성공적으로 연결되었습니다.',
+                QMessageBox.Ok
+            )
+
+            # 연결을 종료
+            conn.close()
+
+        except cx_Oracle.DatabaseError as e:
+            # 실패 텍스트 팝업
+            QMessageBox.warning(
+                self.window, 'Message',
+                f'연결 실패: {e}',
+                QMessageBox.Ok
+            )
+
+    def __ConnDb(self):
+        # pushButtonSrcTestConn 와 동일한 함수 구현
+        user_id = self.le_id.text()
+        user_pw = self.le_pw.text()
+        ip = self.le_ip.text()
+        port = self.le_port.text()
+        sid = self.le_sid.text()
+
+        try:
+            dsn = cx_Oracle.makedsn(ip, port, sid)
+            conn = cx_Oracle.connect(user_id, user_pw, dsn)
+
+            # 성공 텍스트 팝업
+            QMessageBox.information(
+                self.window, 'Message',
+                '성공적으로 연결되었습니다.',
+                QMessageBox.Ok
+            )
+            
+            # 커서 생성 및 쿼리를 실행
+            cursor = conn.cursor()
+            rows = cursor.execute(cm.getTblList()).fetchall()
+
+            # 반환할 QTreeWidget 생성
+            table_tree = self.__bindQTreeWidget("treeViewSrcTables")
+            table_tree.clear()
+            table_tree.setColumnCount(3)
+            table_tree.setHeaderLabels(["Owner", "Table Name", "Partition Name"])
+        
+            # 트리 아이템 추가
+            for row in rows:
+                owner = row[0]
+                table_name = row[1]
+                partition = row[2] or "N/A"
+        
+                owner_item = table_tree.findItems(owner, Qt.MatchExactly | Qt.MatchRecursive, 0)[0] if table_tree.findItems(owner, Qt.MatchExactly | Qt.MatchRecursive, 0) else QTreeWidgetItem(table_tree, [owner])
+                table_item = table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0)[0] if table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0) else QTreeWidgetItem(owner_item, [table_name])
+                partition_item = QTreeWidgetItem(table_item, [partition])
+        
+            # 연결을 종료
+            conn.close()
+        except cx_Oracle.DatabaseError as e:
+            # 실패 텍스트 팝업
+            QMessageBox.warning(
+                self.window, 'Message',
+                f'연결 실패: {e}',
+                QMessageBox.Ok
+            )
+
+    # ================= 접속 및 테이블리스트 추가 [END] ==================================
+
     def setup_ui(self):
         self.treeSrcTab = self.__bindQTreeWidget('treeViewSrcTables')
         self.treeMigTab = self.__bindQTreeWidget('treeViewMigTables')
