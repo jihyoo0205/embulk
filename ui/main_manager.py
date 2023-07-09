@@ -103,6 +103,8 @@ class MainWindow(QObject):
             rows = cursor.execute(cm.getTblList()).fetchall()
 
             # 반환할 QTreeWidget 생성
+            table_tree = self.__bindQTreeWidget("treeViewMigTables")
+            table_tree.clear()
             table_tree = self.__bindQTreeWidget("treeViewSrcTables")
             table_tree.clear()
             table_tree.setColumnCount(3)
@@ -112,11 +114,12 @@ class MainWindow(QObject):
             for row in rows:
                 owner = row[0]
                 table_name = row[1]
-                partition = row[2] or "N/A"
+                partition = row[2] # or "N/A"
         
                 owner_item = table_tree.findItems(owner, Qt.MatchExactly | Qt.MatchRecursive, 0)[0] if table_tree.findItems(owner, Qt.MatchExactly | Qt.MatchRecursive, 0) else QTreeWidgetItem(table_tree, [owner])
                 table_item = table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0)[0] if table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0) else QTreeWidgetItem(owner_item, [table_name])
-                partition_item = QTreeWidgetItem(table_item, [partition])
+                if partition:
+                    partition_item = QTreeWidgetItem(table_item, [partition])
         
             # 연결을 종료
             conn.close()
@@ -192,49 +195,76 @@ class MainWindow(QObject):
         # 선택했음
         for item in selected_items:
             parent_item = item.parent()
+            grandparent_item = parent_item.parent() if parent_item is not None else None
             child_count = item.childCount()
             copied_item = item.clone()
 
-            # 1) 최상단 항목일 때
+            # 최상단(Schema) 항목일 때
             if parent_item is None:
                 if self.find_item(tgtTreeList, copied_item) < 0:
                     tgtTreeList.addTopLevelItem(copied_item)
 
-            # 2) 중간 항목일 때
+            # 중간(Table) 항목일 때
             elif child_count > 0:
                 copied_parent_item = parent_item.clone()
                 copied_parent_item.takeChildren()
-        
+                
+                # 트리뷰를 탐색해서 같은 스키마가 있는지 탐색
                 retrunIdx = self.find_item(tgtTreeList, copied_parent_item)
         
+                # 새로운 스키마인 경우
                 if retrunIdx < 0:
                     tgtTreeList.addTopLevelItem(copied_parent_item)
                     tgtTreeList.topLevelItem(tgtTreeList.indexOfTopLevelItem(copied_parent_item)).addChild(copied_item)
-        
+                
+                # 이미 추가된 스키마인 경우
                 else:
                     target_parent_item = tgtTreeList.topLevelItem(retrunIdx)
                     if self.find_child_items(target_parent_item, copied_item) < 0:
                         target_parent_item.addChild(copied_item)
 
-            # 3) 하위 항목일 때
+            # 최하위(Partition) 항목일 때
             else:
-                # 선택한 항목이 최하위 항목일 때
-                if child_count == 0:
-                    copied_parent_item = parent_item.clone()
-                    copied_parent_item.takeChildren()
-                    retrunIdx = self.find_item(tgtTreeList, copied_parent_item)
+                if child_count == 0:  # 하위 항목이 없는 경우
+                    copied_parent_item = parent_item.clone()  # 복사할 부모 항목
+                    copied_parent_item.takeChildren()  # 복사된 부모 항목의 하위 항목 제거
+                    return_idx = self.find_item(tgtTreeList, copied_parent_item)  # 복사된 부모 항목 중에서 같은 스키마가 있는 항목 탐색
+            
+                    # 같은 스키마가 없을 때
+                    if return_idx < 0:
+                        if grandparent_item is not None:  # 부모와 조부모 항목이 모두 있는 경우
+                            copied_grandparent_item = grandparent_item.clone()
+                            copied_grandparent_item.takeChildren()
+                            grandparent_return_idx = self.find_item(tgtTreeList, copied_grandparent_item)
+            
+                            # 조부모 항목도 새로운 스키마인 경우
+                            if grandparent_return_idx < 0:
+                                # 조부모 항목을 추가하고, 부모 항목을 조부모 항목 밑으로 추가
+                                tgtTreeList.addTopLevelItem(copied_grandparent_item)
+                                tgtTreeList.topLevelItem(tgtTreeList.indexOfTopLevelItem(copied_grandparent_item)).addChild(copied_parent_item)
 
-                    # 같은 스키마가 없으면 추가
-                    if retrunIdx < 0:
-                        copied_parent_item.addChild(copied_item)
-                        tgtTreeList.addTopLevelItem(copied_parent_item)
+                                # 부모 항목 아래에 하위 항목을 추가
+                                copied_parent_item.addChild(copied_item)
 
-                    # 있으면 그 아래에 하위 항목만추가
+                            else:
+                                # 조부모 항목 아래에 부모 항목을 추가
+                                tgtTreeList.topLevelItem(grandparent_return_idx).addChild(copied_parent_item)
+            
+                            # 부모 항목 아래에 하위 항목을 추가
+                            if self.find_child_items(copied_parent_item, copied_item) < 0:
+                                copied_parent_item.addChild(copied_item)
+                        else:
+                            # 부모 항목을 새로운 스키마로 추가하고, 그 아래에 하위 항목을 추가
+                            tgtTreeList.addTopLevelItem(copied_parent_item)
+                            if self.find_child_items(copied_parent_item, copied_item) < 0:
+                                copied_parent_item.addChild(copied_item)
+            
+                    # 같은 스키마가 있을 때
                     else:
-                        target_parent_item = tgtTreeList.topLevelItem(retrunIdx)
+                        target_parent_item = tgtTreeList.topLevelItem(return_idx)
+                        # 부모 항목 아래에 하위 항목이 존재하지 않으면 추가
                         if self.find_child_items(target_parent_item, copied_item) < 0:
                             target_parent_item.addChild(copied_item)
-
 
     def remove_item(self):
         sender = self.sender()
