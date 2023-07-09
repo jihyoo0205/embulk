@@ -13,16 +13,23 @@ class YmlConfig:
     def __init__(self):
         self.execItem = {}
         self.configItem = {}
-
         self.table = []
         self.query = ''
+        
+        # TODO: type 별로 인자값 넣기
+        self.setDriverPath('Oracle')
 
-        self.setDriverPath()
-
-    def setDriverPath(self):
+    def setDriverPath(self, type):
         # TODO: type -> oracle / mysql 따라 jdbc 경로 따로 지정
-        self.configItem = {'driver_path' : fr"{cm.ROOT_PATH}\env\lib\ojdbc8.jar"}
-    
+        if type == 'Oracle':
+            self.configItem = {'driver_path' : fr"{cm.ROOT_PATH}\env\lib\ojdbc8.jar"}
+        
+        elif type == 'MySQL':
+            pass
+
+        else:
+            pass
+
     def setType(self, type):
         self.configItem['type'] = type
 
@@ -41,7 +48,6 @@ class YmlConfig:
     def setDbName(self,dbName):
         self.configItem['database'] = dbName
     
-    # TODO: 컬럼 선택지는 나중에
     def setQuery(self, schema, table):
         self.query = f"\"select * from {schema}.{table}\""
         self.configItem['query'] = self.query

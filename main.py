@@ -11,7 +11,6 @@ def startOraConn(config) :
     conn = oraConn.startConn(config)
     if conn:
         print ('\n\n' + config.configItem['database'] + " Connected.")
-    
     return conn
 
 def main():
@@ -40,8 +39,6 @@ def main():
 
 
     # -- 테이블 정보
-    
-    # -- 테이블 컬럼 정보
     
     # -- 파티션 정보 --> 트리 형태로 아래에 표시
 
