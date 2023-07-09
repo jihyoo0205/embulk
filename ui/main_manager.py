@@ -200,7 +200,23 @@ class MainWindow(QObject):
                 if self.find_item(tgtTreeList, copied_item) < 0:
                     tgtTreeList.addTopLevelItem(copied_item)
 
-            # 2) 하위 항목일 때
+            # 2) 중간 항목일 때
+            elif child_count > 0:
+                copied_parent_item = parent_item.clone()
+                copied_parent_item.takeChildren()
+        
+                retrunIdx = self.find_item(tgtTreeList, copied_parent_item)
+        
+                if retrunIdx < 0:
+                    tgtTreeList.addTopLevelItem(copied_parent_item)
+                    tgtTreeList.topLevelItem(tgtTreeList.indexOfTopLevelItem(copied_parent_item)).addChild(copied_item)
+        
+                else:
+                    target_parent_item = tgtTreeList.topLevelItem(retrunIdx)
+                    if self.find_child_items(target_parent_item, copied_item) < 0:
+                        target_parent_item.addChild(copied_item)
+
+            # 3) 하위 항목일 때
             else:
                 # 선택한 항목이 최하위 항목일 때
                 if child_count == 0:
@@ -242,6 +258,18 @@ class MainWindow(QObject):
                 index = srcTreeList.indexOfTopLevelItem(item)
                 srcTreeList.takeTopLevelItem(index)
 
+    # 지워진 이력 확인. 용도 확인 필요.
+    def clickMoveItem(self):
+        sender = self.sender()
+        if self.pbPlus == sender:
+            srcTreeList = self.treeSrcTab
+            tgtTreeList = self.treeMigTab
+        else:
+            srcTreeList = self.treeMigTab
+            tgtTreeList = self.treeSrcTab
+        item = srcTreeList.takeTopLevelItem(srcTreeList.currentColumn())
+        root = QTreeWidget.invisibleRootItem(tgtTreeList)
+        root.addChild(item)
 
 def exec():
     app = QApplication(sys.argv)
