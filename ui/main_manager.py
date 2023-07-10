@@ -182,7 +182,8 @@ class MainWindow(QObject):
             if selected_item.text(0) == child_item.text(0):
                 return i
         return -1
-
+    
+    # ================= 트리 추가 제거 [START] ==================================
     def copy_item(self):
         sender = self.sender()
         if self.pbPlus == sender:
@@ -277,6 +278,7 @@ class MainWindow(QObject):
             else:
                 index = srcTreeList.indexOfTopLevelItem(item)
                 srcTreeList.takeTopLevelItem(index)
+    # ================= 트리 추가 제거 [END] ==================================
 
     # 지워진 이력 확인. 용도 확인 필요.
     def clickMoveItem(self):
