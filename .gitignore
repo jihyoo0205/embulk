@@ -41,6 +41,7 @@ env/pyvenv.cfg
 env/Scripts/activate.bat
 env/Scripts/activate
 env
+env/
 *.pyc
 *.pyc
 *.bat
