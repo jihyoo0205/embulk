@@ -47,7 +47,7 @@ class MainWindow(QObject):
         self.setup_ui()
         self.window.show()
     
-    # ================= 접속 및 테이블리스트 추가 [START] ==================================
+    # ================= 테스트 접속 [START] ==================================
     def __testConnDb(self):
         # 입력된 오라클 정보를 매핑
         user_id = self.le_id.text()
@@ -78,7 +78,9 @@ class MainWindow(QObject):
                 f'연결 실패: {e}',
                 QMessageBox.Ok
             )
+    # ================= 테스트 접속 [END] ==================================
 
+    # ================= 접속 및 테이블리스트 추가 [START] ==================================
     def __ConnDb(self):
         # pushButtonSrcTestConn 와 동일한 함수 구현
         user_id = self.le_id.text()
