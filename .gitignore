@@ -40,4 +40,12 @@ ui/__pycache__/main_manager.cpython-310.pyc
 env/pyvenv.cfg
 env/Scripts/activate.bat
 env/Scripts/activate
+env
+env/
 *.pyc
+*.pyc
+*.bat
+*.pyc
+env/pyvenv.cfg
+env/pyvenv_CJC.cfg
+env/pyvenv_YJH.cfg
