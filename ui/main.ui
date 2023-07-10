@@ -431,51 +431,6 @@
        <string/>
       </property>
      </column>
-     <item>
-      <property name="text">
-       <string>aa</string>
-      </property>
-      <item>
-       <property name="text">
-        <string>tab1</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>tab2</string>
-       </property>
-      </item>
-     </item>
-     <item>
-      <property name="text">
-       <string>1</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>2</string>
-      </property>
-      <item>
-       <property name="text">
-        <string>11</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>22</string>
-       </property>
-      </item>
-     </item>
-     <item>
-      <property name="text">
-       <string>3</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>New Item</string>
-      </property>
-     </item>
     </widget>
     <widget class="QPlainTextEdit" name="textEditQuery">
      <property name="geometry">
@@ -594,7 +549,7 @@
      <x>0</x>
      <y>0</y>
      <width>760</width>
-     <height>21</height>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuTest">
