@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import module.common as cm
 import cx_Oracle
 
+os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1' # 디스플레이 설정에 따라 변하게
 UI_FILE_PATH = fr"{cm.ROOT_PATH}\ui\main.ui"
 
 class MainWindow(QObject):
