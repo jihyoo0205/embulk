@@ -23,124 +23,35 @@ class MainWindow(QObject):
         self.window = loader.load(uiFile)
         uiFile.close()
 
-        # ================= 접속 정보 입력 및 접속 버튼 [START] ==================================
-
-        # UI에 연결할 변수를 선언
-        self.le_ip = self.__bindQLineEdit('lineEditSrcHost')
-        self.le_port = self.__bindQLineEdit('lineEditSrcPort')
-        self.le_sid = self.__bindQLineEdit('lineEditSrcDB')
-        self.le_id = self.__bindQLineEdit('lineEditSrcUser')
-        self.le_pw = self.__bindQLineEdit('lineEditSrcPasswd')
-        self.le_pw.setEchoMode(QLineEdit.Password)                          # 패스워드 마스킹
-
-        # 버튼 클릭 시 실행될 함수를 연결
-        self.btn_test_conn = self.__bindQPushButton('pushButtonSrcTestConn')
-        self.btn_test_conn.clicked.connect(self.__testConnDb)
-
-        self.btn_connect = self.__bindQPushButton('pushButtonSrcConn')
-        self.btn_connect.clicked.connect(self.__ConnDb)
-
-        # ================= 접속 정보 입력 및 접속 버튼 [END] ==================================
-
         # 윈도우를 화면에 표시
-        self.setup_ui()
+        self.setupUi()
         self.window.show()
+
+        # 접속 정보 입력 및 접속 버튼 초기화
+        self.setupDbConnect()
     
-    # ================= 테스트 접속 [START] ==================================
-    def __testConnDb(self):
-        # 입력된 오라클 정보를 매핑
-        user_id = self.le_id.text()
-        user_pw = self.le_pw.text()
-        ip = self.le_ip.text()
-        port = self.le_port.text()
-        sid = self.le_sid.text()
-
-        try:
-            # 데이터베이스 연결 정보를 설정
-            dsn = cx_Oracle.makedsn(ip, port, sid)
-            conn = cx_Oracle.connect(user_id, user_pw, dsn)
-
-            # 성공 텍스트 팝업
-            QMessageBox.information(
-                self.window, 'Message',
-                '성공적으로 연결되었습니다.',
-                QMessageBox.Ok
-            )
-
-            # 연결을 종료
-            conn.close()
-
-        except cx_Oracle.DatabaseError as e:
-            # 실패 텍스트 팝업
-            QMessageBox.warning(
-                self.window, 'Message',
-                f'연결 실패: {e}',
-                QMessageBox.Ok
-            )
-    # ================= 테스트 접속 [END] ==================================
-
-    # ================= 접속 및 테이블리스트 추가 [START] ==================================
-    def __ConnDb(self):
-        # pushButtonSrcTestConn 와 동일한 함수 구현
-        user_id = self.le_id.text()
-        user_pw = self.le_pw.text()
-        ip = self.le_ip.text()
-        port = self.le_port.text()
-        sid = self.le_sid.text()
-
-        try:
-            dsn = cx_Oracle.makedsn(ip, port, sid)
-            conn = cx_Oracle.connect(user_id, user_pw, dsn)
-
-            # 성공 텍스트 팝업
-            QMessageBox.information(
-                self.window, 'Message',
-                '성공적으로 연결되었습니다.',
-                QMessageBox.Ok
-            )
-            
-            # 커서 생성 및 쿼리를 실행
-            cursor = conn.cursor()
-            rows = cursor.execute(cm.getTblList()).fetchall()
-
-            # 반환할 QTreeWidget 생성
-            table_tree = self.__bindQTreeWidget("treeViewMigTables")
-            table_tree.clear()
-            table_tree = self.__bindQTreeWidget("treeViewSrcTables")
-            table_tree.clear()
-            table_tree.setColumnCount(3)
-            table_tree.setHeaderLabels(["Owner", "Table Name", "Partition Name"])
-        
-            # 트리 아이템 추가
-            for row in rows:
-                owner = row[0]
-                table_name = row[1]
-                partition = row[2] # or "N/A"
-        
-                owner_item = table_tree.findItems(owner, Qt.MatchExactly | Qt.MatchRecursive, 0)[0] if table_tree.findItems(owner, Qt.MatchExactly | Qt.MatchRecursive, 0) else QTreeWidgetItem(table_tree, [owner])
-                table_item = table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0)[0] if table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0) else QTreeWidgetItem(owner_item, [table_name])
-                if partition:
-                    partition_item = QTreeWidgetItem(table_item, [partition])
-        
-            # 연결을 종료
-            conn.close()
-        except cx_Oracle.DatabaseError as e:
-            # 실패 텍스트 팝업
-            QMessageBox.warning(
-                self.window, 'Message',
-                f'연결 실패: {e}',
-                QMessageBox.Ok
-            )
-
-    # ================= 접속 및 테이블리스트 추가 [END] ==================================
-
-    def setup_ui(self):
+    def setupUi(self):
         self.treeSrcTab = self.__bindQTreeWidget('treeViewSrcTables')
         self.treeMigTab = self.__bindQTreeWidget('treeViewMigTables')
         self.pbPlus = self.__bindQPushButton('pushButtonPlus')
         self.pbMinus = self.__bindQPushButton('pushButtonMinus')
         self.pbPlus.clicked.connect(self.copy_item)
         self.pbMinus.clicked.connect(self.remove_item)
+    
+    def setupDbConnect(self):
+        # ================= 접속 정보 입력 및 접속 버튼 [START] ==================================
+        # UI에 연결할 변수를 선언
+        self.le_ip = self.__bindQLineEdit('lineEditSrcHost')
+        self.le_port = self.__bindQLineEdit('lineEditSrcPort')
+        self.le_sid = self.__bindQLineEdit('lineEditSrcDB')
+        self.le_id = self.__bindQLineEdit('lineEditSrcUser')
+        self.le_pw = self.__bindQLineEdit('lineEditSrcPasswd')
+        self.le_pw.setEchoMode(QLineEdit.Password)                           # 패스워드 마스킹
+        self.btn_test_conn = self.__bindQPushButton('pushButtonSrcTestConn') # 버튼 클릭 시 실행될 함수를 연결
+        self.btn_test_conn.clicked.connect(self.testConnDb)                # -> Test Connection
+        self.btn_connect = self.__bindQPushButton('pushButtonSrcConn')       # 버튼 클릭 시 실행될 함수를 연결
+        self.btn_connect.clicked.connect(self.connDb)                      # -> Connection
+        # ================= 접속 정보 입력 및 접속 버튼 [END] ==================================
 
     def __bindQLineEdit(self, objectName):
         return self.window.findChild(QLineEdit, objectName)
@@ -181,8 +92,97 @@ class MainWindow(QObject):
             if selected_item.text(0) == child_item.text(0):
                 return i
         return -1
-    
-    # ================= 트리 추가 제거 [START] ==================================
+
+    # ================= 테스트 접속 [START] ==================================
+    def testConnDb(self):
+        # 입력된 오라클 정보를 매핑
+        user_id = self.le_id.text()
+        user_pw = self.le_pw.text()
+        ip = self.le_ip.text()
+        port = self.le_port.text()
+        sid = self.le_sid.text()
+
+        try:
+            # 데이터베이스 연결 정보를 설정
+            dsn = cx_Oracle.makedsn(ip, port, sid)
+            conn = cx_Oracle.connect(user_id, user_pw, dsn)
+
+            # 성공 텍스트 팝업
+            QMessageBox.information(
+                self.window, 'Message',
+                '성공적으로 연결되었습니다.',
+                QMessageBox.Ok
+            )
+
+            # 연결을 종료
+            conn.close()
+
+        except cx_Oracle.DatabaseError as e:
+            # 실패 텍스트 팝업
+            QMessageBox.warning(
+                self.window, 'Message',
+                f'연결 실패: {e}',
+                QMessageBox.Ok
+            )
+    # ================= 테스트 접속 [END] ==================================
+
+    # ================= 접속 및 테이블리스트 추가 [START] ==================================
+    def connDb(self):
+        # pushButtonSrcTestConn 와 동일한 함수 구현
+        user_id = self.le_id.text()
+        user_pw = self.le_pw.text()
+        ip = self.le_ip.text()
+        port = self.le_port.text()
+        sid = self.le_sid.text()
+
+        try:
+            dsn = cx_Oracle.makedsn(ip, port, sid)
+            conn = cx_Oracle.connect(user_id, user_pw, dsn)
+
+            # 성공 텍스트 팝업
+            QMessageBox.information(
+                self.window, 'Message',
+                '성공적으로 연결되었습니다.',
+                QMessageBox.Ok
+            )
+            
+            # 커서 생성 및 쿼리를 실행
+            cursor = conn.cursor()
+            rows = cursor.execute(cm.getTblList()).fetchall()
+
+            # 반환할 QTreeWidget 생성
+            table_tree = self.__bindQTreeWidget("treeViewMigTables")
+            table_tree.clear()
+            table_tree = self.__bindQTreeWidget("treeViewSrcTables")
+            table_tree.clear()
+            table_tree.setColumnCount(1)
+            table_tree.setHeaderLabels(["Owner - Table Name - Partition Name"])
+        
+            # 트리 아이템 추가
+            for row in rows:
+                owner = row[0]
+                table_name = row[1]
+                partition = row[2] # or "N/A"
+        
+                owner_item = table_tree.findItems(owner, Qt.MatchExactly | Qt.MatchRecursive, 0)[0] if table_tree.findItems(owner, Qt.MatchExactly | Qt.MatchRecursive, 0) else QTreeWidgetItem(table_tree, [owner])
+                table_item = table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0)[0] if table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0) else QTreeWidgetItem(owner_item, [table_name])
+                if partition:
+                    partition_item = QTreeWidgetItem(table_item, [partition])
+        
+            # 연결을 종료
+            conn.close()
+        except cx_Oracle.DatabaseError as e:
+            # 실패 텍스트 팝업
+            QMessageBox.warning(
+                self.window, 'Message',
+                f'연결 실패: {e}',
+                QMessageBox.Ok
+            )
+
+    # ================= 접속 및 테이블리스트 추가 [END] ==================================
+
+
+    # ================= 트리 추가 [START] ==================================
     def copy_item(self):
         sender = self.sender()
         if self.pbPlus == sender:
@@ -206,8 +206,8 @@ class MainWindow(QObject):
                 if self.find_item(tgtTreeList, copied_item) < 0:
                     tgtTreeList.addTopLevelItem(copied_item)
 
-            # 2) 중간 항목일 때
-            elif child_count > 0:
+            # 중간 항목일 때
+            elif parent_item is not None and grandparent_item is None:
                 copied_parent_item = parent_item.clone()
                 copied_parent_item.takeChildren()
         
@@ -221,40 +221,33 @@ class MainWindow(QObject):
                     target_parent_item = tgtTreeList.topLevelItem(retrunIdx)
                     if self.find_child_items(target_parent_item, copied_item) < 0:
                         target_parent_item.addChild(copied_item)
-
-            # 하위 항목일 때
-            else:
-                if child_count == 0:
-                    copied_parent_item = parent_item.clone()
-                    copied_parent_item.takeChildren()
-                    return_idx = self.find_item(tgtTreeList, copied_parent_item)
-
-                    # 같은 스키마가 없을 때
-                    if return_idx < 0:
-                        if grandparent_item is not None:  # 부모와 조부모 항목이 모두 있는 경우
-                            copied_grandparent_item = grandparent_item.clone()
-                            copied_grandparent_item.takeChildren()
-                            grandparent_return_idx = self.find_item(tgtTreeList, copied_grandparent_item)
-
-                            if grandparent_return_idx < 0:
-                                tgtTreeList.addTopLevelItem(copied_grandparent_item)
-                                tgtTreeList.topLevelItem(tgtTreeList.indexOfTopLevelItem(copied_grandparent_item)).addChild(copied_parent_item)
-                            else:
-                                tgtTreeList.topLevelItem(grandparent_return_idx).addChild(copied_parent_item)
-
-                            # 그 아래에 하위 항목 추가
-                            if self.find_child_items(copied_parent_item, copied_item) < 0:
-                                copied_parent_item.addChild(copied_item)
-                        else:
-                            tgtTreeList.addTopLevelItem(copied_parent_item)
-                            if self.find_child_items(copied_parent_item, copied_item) < 0:
-                                copied_parent_item.addChild(copied_item)
-
-                    # 있으면 그 아래에 하위 항목만 추가
+            
+            # 최하위 항목일 때
+            elif parent_item is not None and grandparent_item is not None:
+                copied_grandparent_item = grandparent_item.clone()
+                copied_grandparent_item.takeChildren()
+                grandparent_return_idx = self.find_item(tgtTreeList, copied_grandparent_item)
+                
+                # 부모 항목 아래에 추가
+                copied_parent_item = parent_item.clone()
+                copied_parent_item.takeChildren()
+                
+                if grandparent_return_idx < 0:
+                    copied_grandparent_item = grandparent_item.clone()
+                    copied_grandparent_item.takeChildren()
+                    tgtTreeList.addTopLevelItem(copied_grandparent_item)
+                    tgtTreeList.topLevelItem(tgtTreeList.indexOfTopLevelItem(copied_grandparent_item)).addChild(copied_parent_item)
+                else:
+                    target_grandparent_item = tgtTreeList.topLevelItem(grandparent_return_idx)
+                    child_idx = self.find_child_items(target_grandparent_item, copied_parent_item)
+                    if child_idx < 0:
+                        target_grandparent_item.addChild(copied_parent_item)
                     else:
-                        target_parent_item = tgtTreeList.topLevelItem(return_idx)
-                        if self.find_child_items(target_parent_item, copied_item) < 0:
-                            target_parent_item.addChild(copied_item)
+                        copied_parent_item = target_grandparent_item.child(child_idx)
+            
+                # 부모 항목 아래에 추가
+                if self.find_child_items(copied_parent_item, copied_item) < 0:
+                    copied_parent_item.addChild(copied_item)
 
     def remove_item(self):
         sender = self.sender()
@@ -295,5 +288,4 @@ class MainWindow(QObject):
 def exec():
     app = QApplication(sys.argv)
     form = MainWindow(UI_FILE_PATH)
-
     sys.exit(app.exec_())
