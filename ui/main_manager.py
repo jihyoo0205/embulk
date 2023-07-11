@@ -26,31 +26,25 @@ class MainWindow(QObject):
         # 윈도우를 화면에 표시
         self.setupUi()
         self.window.show()
-
-        # 접속 정보 입력 및 접속 버튼 초기화
-        self.setupDbConnect()
     
     def setupUi(self):
         self.treeSrcTab = self.__bindQTreeWidget('treeViewSrcTables')
         self.treeMigTab = self.__bindQTreeWidget('treeViewMigTables')
         self.pbPlus = self.__bindQPushButton('pushButtonPlus')
         self.pbMinus = self.__bindQPushButton('pushButtonMinus')
-        self.pbPlus.clicked.connect(self.copy_item)
-        self.pbMinus.clicked.connect(self.remove_item)
-    
-    def setupDbConnect(self):
+        self.pbPlus.clicked.connect(self.copyItem)
+        self.pbMinus.clicked.connect(self.removeItem)
         # ================= 접속 정보 입력 및 접속 버튼 [START] ==================================
-        # UI에 연결할 변수를 선언
-        self.le_ip = self.__bindQLineEdit('lineEditSrcHost')
-        self.le_port = self.__bindQLineEdit('lineEditSrcPort')
-        self.le_sid = self.__bindQLineEdit('lineEditSrcDB')
-        self.le_id = self.__bindQLineEdit('lineEditSrcUser')
-        self.le_pw = self.__bindQLineEdit('lineEditSrcPasswd')
-        self.le_pw.setEchoMode(QLineEdit.Password)                           # 패스워드 마스킹
-        self.btn_test_conn = self.__bindQPushButton('pushButtonSrcTestConn') # 버튼 클릭 시 실행될 함수를 연결
-        self.btn_test_conn.clicked.connect(self.testConnDb)                # -> Test Connection
-        self.btn_connect = self.__bindQPushButton('pushButtonSrcConn')       # 버튼 클릭 시 실행될 함수를 연결
-        self.btn_connect.clicked.connect(self.connDb)                      # -> Connection
+        self.srcIp = self.__bindQLineEdit('lineEditSrcHost')               # Source DB 접속 IP
+        self.srcPort = self.__bindQLineEdit('lineEditSrcPort')             # Source DB 접속 Port
+        self.srcSid = self.__bindQLineEdit('lineEditSrcDB')                # Source DB Name(SID)
+        self.srcUser = self.__bindQLineEdit('lineEditSrcUser')             # Source DB 접속 유저
+        self.srcPw = self.__bindQLineEdit('lineEditSrcPasswd')             # Source DB 접속 패스워드
+        self.srcPw.setEchoMode(QLineEdit.Password)                         # 패스워드 마스킹
+        self.btnTestConn = self.__bindQPushButton('pushButtonSrcTestConn') # 버튼 클릭 시 실행될 함수 연결
+        self.btnTestConn.clicked.connect(self.testConnDb)                  # -> Test Connection
+        self.btnConnect = self.__bindQPushButton('pushButtonSrcConn')      # 버튼 클릭 시 실행될 함수 연결
+        self.btnConnect.clicked.connect(self.connDb)                       # -> Connection
         # ================= 접속 정보 입력 및 접속 버튼 [END] ==================================
 
     def __bindQLineEdit(self, objectName):
@@ -77,7 +71,7 @@ class MainWindow(QObject):
         #eval(f'btn.clicked.connect(self.click_{objectName})')
         return btn
     
-    def find_item(self, treeList, item):
+    def findItem(self, treeList, item):
         count = treeList.topLevelItemCount()
         for i in range(count):
             if item.text(0) == treeList.topLevelItem(i).text(0):
@@ -85,10 +79,10 @@ class MainWindow(QObject):
             
         return -1
     
-    def find_child_items(self, parent_item, selected_item):
-        count = parent_item.childCount()
+    def findChildItems(self, parentItem, selected_item):
+        count = parentItem.childCount()
         for i in range(count):
-            child_item = parent_item.child(i)
+            child_item = parentItem.child(i)
             if selected_item.text(0) == child_item.text(0):
                 return i
         return -1
@@ -96,11 +90,11 @@ class MainWindow(QObject):
     # ================= 테스트 접속 [START] ==================================
     def testConnDb(self):
         # 입력된 오라클 정보를 매핑
-        user_id = self.le_id.text()
-        user_pw = self.le_pw.text()
-        ip = self.le_ip.text()
-        port = self.le_port.text()
-        sid = self.le_sid.text()
+        user_id = self.srcUser.text()
+        user_pw = self.srcPw.text()
+        ip = self.srcIp.text()
+        port = self.srcPort.text()
+        sid = self.srcSid.text()
 
         try:
             # 데이터베이스 연결 정보를 설정
@@ -129,11 +123,11 @@ class MainWindow(QObject):
     # ================= 접속 및 테이블리스트 추가 [START] ==================================
     def connDb(self):
         # pushButtonSrcTestConn 와 동일한 함수 구현
-        user_id = self.le_id.text()
-        user_pw = self.le_pw.text()
-        ip = self.le_ip.text()
-        port = self.le_port.text()
-        sid = self.le_sid.text()
+        user_id = self.srcUser.text()
+        user_pw = self.srcPw.text()
+        ip = self.srcIp.text()
+        port = self.srcPort.text()
+        sid = self.srcSid.text()
 
         try:
             dsn = cx_Oracle.makedsn(ip, port, sid)
@@ -183,7 +177,7 @@ class MainWindow(QObject):
 
 
     # ================= 트리 추가 [START] ==================================
-    def copy_item(self):
+    def copyItem(self):
         sender = self.sender()
         if self.pbPlus == sender:
             srcTreeList = self.treeSrcTab
@@ -196,60 +190,59 @@ class MainWindow(QObject):
 
         # 선택했음
         for item in selected_items:
-            parent_item = item.parent()
-            grandparent_item = parent_item.parent() if parent_item is not None else None
-            child_count = item.childCount()
-            copied_item = item.clone()
+            parentItem = item.parent()
+            grandParentItem = parentItem.parent() if parentItem is not None else None
+            copiedItem = item.clone()
 
             # 최상단 항목일 때
-            if parent_item is None:
-                if self.find_item(tgtTreeList, copied_item) < 0:
-                    tgtTreeList.addTopLevelItem(copied_item)
+            if parentItem is None:
+                if self.findItem(tgtTreeList, copiedItem) < 0:
+                    tgtTreeList.addTopLevelItem(copiedItem)
 
             # 중간 항목일 때
-            elif parent_item is not None and grandparent_item is None:
-                copied_parent_item = parent_item.clone()
-                copied_parent_item.takeChildren()
+            elif parentItem is not None and grandParentItem is None:
+                copiedParentItem = parentItem.clone()
+                copiedParentItem.takeChildren()
         
-                retrunIdx = self.find_item(tgtTreeList, copied_parent_item)
+                returnIdx = self.findItem(tgtTreeList, copiedParentItem)
         
-                if retrunIdx < 0:
-                    tgtTreeList.addTopLevelItem(copied_parent_item)
-                    tgtTreeList.topLevelItem(tgtTreeList.indexOfTopLevelItem(copied_parent_item)).addChild(copied_item)
+                if returnIdx < 0:
+                    tgtTreeList.addTopLevelItem(copiedParentItem)
+                    tgtTreeList.topLevelItem(tgtTreeList.indexOfTopLevelItem(copiedParentItem)).addChild(copiedItem)
         
                 else:
-                    target_parent_item = tgtTreeList.topLevelItem(retrunIdx)
-                    if self.find_child_items(target_parent_item, copied_item) < 0:
-                        target_parent_item.addChild(copied_item)
+                    target_parentItem = tgtTreeList.topLevelItem(returnIdx)
+                    if self.findChildItems(target_parentItem, copiedItem) < 0:
+                        target_parentItem.addChild(copiedItem)
             
             # 최하위 항목일 때
-            elif parent_item is not None and grandparent_item is not None:
-                copied_grandparent_item = grandparent_item.clone()
-                copied_grandparent_item.takeChildren()
-                grandparent_return_idx = self.find_item(tgtTreeList, copied_grandparent_item)
+            elif parentItem is not None and grandParentItem is not None:
+                copiedGrandParentItem = grandParentItem.clone()
+                copiedGrandParentItem.takeChildren()
+                grandparent_return_idx = self.findItem(tgtTreeList, copiedGrandParentItem)
                 
                 # 부모 항목 아래에 추가
-                copied_parent_item = parent_item.clone()
-                copied_parent_item.takeChildren()
+                copiedParentItem = parentItem.clone()
+                copiedParentItem.takeChildren()
                 
                 if grandparent_return_idx < 0:
-                    copied_grandparent_item = grandparent_item.clone()
-                    copied_grandparent_item.takeChildren()
-                    tgtTreeList.addTopLevelItem(copied_grandparent_item)
-                    tgtTreeList.topLevelItem(tgtTreeList.indexOfTopLevelItem(copied_grandparent_item)).addChild(copied_parent_item)
+                    copiedGrandParentItem = grandParentItem.clone()
+                    copiedGrandParentItem.takeChildren()
+                    tgtTreeList.addTopLevelItem(copiedGrandParentItem)
+                    tgtTreeList.topLevelItem(tgtTreeList.indexOfTopLevelItem(copiedGrandParentItem)).addChild(copiedParentItem)
                 else:
-                    target_grandparent_item = tgtTreeList.topLevelItem(grandparent_return_idx)
-                    child_idx = self.find_child_items(target_grandparent_item, copied_parent_item)
-                    if child_idx < 0:
-                        target_grandparent_item.addChild(copied_parent_item)
+                    target_grandParentItem = tgtTreeList.topLevelItem(grandparent_return_idx)
+                    childIdx = self.findChildItems(target_grandParentItem, copiedParentItem)
+                    if childIdx < 0:
+                        target_grandParentItem.addChild(copiedParentItem)
                     else:
-                        copied_parent_item = target_grandparent_item.child(child_idx)
+                        copiedParentItem = target_grandParentItem.child(childIdx)
             
                 # 부모 항목 아래에 추가
-                if self.find_child_items(copied_parent_item, copied_item) < 0:
-                    copied_parent_item.addChild(copied_item)
+                if self.findChildItems(copiedParentItem, copiedItem) < 0:
+                    copiedParentItem.addChild(copiedItem)
 
-    def remove_item(self):
+    def removeItem(self):
         sender = self.sender()
         if self.pbPlus == sender:
             srcTreeList = self.treeSrcTab
@@ -261,12 +254,12 @@ class MainWindow(QObject):
         selected_items = srcTreeList.selectedItems()
 
         for item in selected_items:
-            parent_item = item.parent()
-            if parent_item is not None:
-                if parent_item.childCount() == 1:
-                    index = srcTreeList.indexOfTopLevelItem(parent_item)
+            parentItem = item.parent()
+            if parentItem is not None:
+                if parentItem.childCount() == 1:
+                    index = srcTreeList.indexOfTopLevelItem(parentItem)
                     srcTreeList.takeTopLevelItem(index)
-                parent_item.removeChild(item)
+                parentItem.removeChild(item)
             else:
                 index = srcTreeList.indexOfTopLevelItem(item)
                 srcTreeList.takeTopLevelItem(index)
