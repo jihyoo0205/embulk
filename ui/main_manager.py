@@ -32,8 +32,6 @@ class MainWindow(QObject):
         self.le_id = self.__bindQLineEdit('lineEditSrcUser')
         self.le_pw = self.__bindQLineEdit('lineEditSrcPasswd')
         self.le_pw.setEchoMode(QLineEdit.Password)                          # 패스워드 마스킹
-        self.btn_connect = self.__bindQPushButton('pushButtonSrcTestConn')
-        self.btn_connect = self.__bindQPushButton('pushButtonSrcConn')
 
         # 버튼 클릭 시 실행될 함수를 연결
         self.btn_test_conn = self.__bindQPushButton('pushButtonSrcTestConn')
