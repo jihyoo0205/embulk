@@ -5,6 +5,7 @@ import conn.mysql as myConn
 import ui.main_manager as mainUi
 from PySide2.QtWidgets import *
 
+# 최진철 test
 # TODO : Oracle Home, Mysql Home, Embulk 환경변수 셋팅 (Home, Log 디렉토리)
 
 def startOraConn(config) :
