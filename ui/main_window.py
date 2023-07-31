@@ -10,6 +10,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import module.common as cm
 import cx_Oracle
+import ui.summary_window as summaryWindow
 
 os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1' # 디스플레이 설정에 따라 변하게
 UI_FILE_PATH = fr"{cm.ROOT_PATH}\ui\main.ui"
@@ -40,11 +41,19 @@ class MainWindow(QObject):
         self.srcSid = self.__bindQLineEdit('lineEditSrcDB')                # Source DB Name(SID)
         self.srcUser = self.__bindQLineEdit('lineEditSrcUser')             # Source DB 접속 유저
         self.srcPw = self.__bindQLineEdit('lineEditSrcPasswd')             # Source DB 접속 패스워드
-        self.srcPw.setEchoMode(QLineEdit.Password)                         # 패스워드 마스킹
+        self.srcPw.setEchoMode(QLineEdit.Password)                         # Source 패스워드 마스킹
+        self.tgtIp = self.__bindQLineEdit('lineEditTgtHost')               # Target DB 접속 IP
+        self.tgtPort = self.__bindQLineEdit('lineEditTgtPort')             # Target DB 접속 Port
+        self.tgtSid = self.__bindQLineEdit('lineEditTgtDB')                # Target DB Name(SID)
+        self.tgtUser = self.__bindQLineEdit('lineEditTgtUser')             # Target DB 접속 유저
+        self.tgtPw = self.__bindQLineEdit('lineEditTgtPasswd')             # Target DB 접속 패스워드
+        self.tgtPw.setEchoMode(QLineEdit.Password)                         # Target 패스워드 마스킹
         self.btnTestConn = self.__bindQPushButton('pushButtonSrcTestConn') # 버튼 클릭 시 실행될 함수 연결
         self.btnTestConn.clicked.connect(self.testConnDb)                  # -> Test Connection
         self.btnConnect = self.__bindQPushButton('pushButtonSrcConn')      # 버튼 클릭 시 실행될 함수 연결
         self.btnConnect.clicked.connect(self.connDb)                       # -> Connection
+        self.btnStart = self.__bindQPushButton('pushButtonStart')          # 버튼 클릭 시 실행될 함수 연결
+        self.btnStart.clicked.connect(self.clickStart)                          # -> Start
         # ================= 접속 정보 입력 및 접속 버튼 [END] ==================================
 
     def __bindQLineEdit(self, objectName):
@@ -67,8 +76,6 @@ class MainWindow(QObject):
 
     def __bindQPushButton(self, objectName):
         btn = self.window.findChild(QPushButton, objectName)
-        # 버튼 클릭했을 때 click_objectName 함수 호출
-        #eval(f'btn.clicked.connect(self.click_{objectName})')
         return btn
     
     def findItem(self, treeList, item):
@@ -277,6 +284,14 @@ class MainWindow(QObject):
         item = srcTreeList.takeTopLevelItem(srcTreeList.currentColumn())
         root = QTreeWidget.invisibleRootItem(tgtTreeList)
         root.addChild(item)
+
+   # ================= Summary 창 띄우기 [START] ==================================
+
+    def clickStart(self):
+        summary = summaryWindow.SummaryWindow()
+        summary.setParent(self)
+    
+   # ================= Summary 창 띄우기 [END] ==================================
 
 def exec():
     app = QApplication(sys.argv)
