@@ -58,9 +58,10 @@ class MainWindow(QObject):
         self.btnConnect = self.__bindQPushButton('pushButtonSrcConn')      # 버튼 클릭 시 실행될 함수 연결
         self.btnConnect.clicked.connect(self.connDb)                       # -> Connection
         self.btnStart = self.__bindQPushButton('pushButtonStart')          # 버튼 클릭 시 실행될 함수 연결
-        self.btnStart.clicked.connect(self.clickStart)                          # -> Start
+        self.btnStart.clicked.connect(self.clickStart)                     # -> Start
+        self.connectYN = False                                             # connect 시 True
         # ================= 접속 정보 입력 및 접속 버튼 [END] ==================================
-        
+
         # 테스트 용도
         self.srcUser.setText('mig')
         self.srcPw.setText('mig')
@@ -183,7 +184,10 @@ class MainWindow(QObject):
                 table_item = table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0)[0] if table_tree.findItems(table_name, Qt.MatchExactly | Qt.MatchRecursive, 0) else QTreeWidgetItem(owner_item, [table_name])
                 if partition:
                     partition_item = QTreeWidgetItem(table_item, [partition])
-        
+            
+            # 접속 성공 시 True
+            self.connectYN = True
+
             # 연결을 종료
             conn.close()
         except cx_Oracle.DatabaseError as e:
@@ -301,7 +305,6 @@ class MainWindow(QObject):
                 # 있으면 입력한 텍스트와 동일한 하위 항목이 있는지 검사
                 for j in range(parentItem.childCount()):
                     childItem = parentItem.child(j)
-                    print(childItem.text(0))
                     if childItem is not None and childItem.text(0) == text:
                         childExists = True
                         break
@@ -320,9 +323,17 @@ class MainWindow(QObject):
 
     # ================= Summary 창 띄우기 [START] =============================
     def clickStart(self):
-        summary = summaryWindow.SummaryWindow()
-        self.copyTree(self.treeMigTab, summary.treeMigTab)
-        summary.setParent(self)
+        # DB에 접속되어있을 때만 창 띄우기
+        if self.connectYN:
+            summary = summaryWindow.SummaryWindow()
+            self.copyTree(self.treeMigTab, summary.treeMigTab)
+            summary.setParent(self)
+        else:
+            QMessageBox.warning(
+                self.window, 'Message',
+                f'DB에 접속되지 않았습니다.',
+                QMessageBox.Ok
+            )
     # ================= Summary 창 띄우기 [END] ===============================
 
 

@@ -5,6 +5,7 @@
 import datetime as dt
 import sys
 import os
+import re
 import module.common as cm
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
@@ -15,8 +16,11 @@ class YmlConfig:
         self.execItem = {}
         self.configItem = {}
         self.query = ''
-        self.maxThreads = 1
-        self.minOutputTasks = 1
+        self.configItem['query'] = ''
+        self.configItem['table'] = ''
+        self.execItem['max_threads'] = 1
+        self.execItem['min_output_tasks'] = 1
+
         
         # TODO: type 별로 인자값 넣기
         self.setDriverPath('Oracle')
@@ -49,15 +53,46 @@ class YmlConfig:
     
     def setQuery(self, tableList):
         # schema.table_name -> schema와 table명 분리
-        item = tableList.split(".")
-        self.query = f"\"select * from {item[0]}.{item[1]}\""
-        self.configItem['query'] = self.query
+        item = tableList.split("__")
+        # 최상위 항목이 스키마인 경우 Query 형태로 변환
+        if item[0] != 'Query':
+            self.configItem['schema'] = item[0]
+            self.configItem['table'] = item[1]
+            # Query 형태로 저장
+            self.query = f"\"select * from {item[0]}.{item[1]}\""
+            self.configItem['query'] = self.query
 
-    def setTable(self, tableList):
-        # schema.table_name -> schema와 table명 분리
-        item = tableList.split(".")
-        # table만 입력
-        self.configItem['table'] = item[1]
+        # 최상위 항목이 Query인 경우
+        else:
+            self.configItem['query'] = f"\"{item[1]}\""
+            # 'from' 다음의 문자열 추출
+            afterFrom = item[1].lower().split('from', 1)[1].strip()
+            # '.'을 기준으로 단어 분리
+            words = afterFrom.split('.')
+            self.configItem['schema'] = words[0]
+            self.configItem['table'] = words[1]
+                
+
+    # def setTable(self, tableList):
+    #     # schema.table_name -> schema와 table명 분리
+    #     item = tableList.split("__")
+    #     # 최상위 항목이 스키마인 경우
+    #     if item[0] != 'Query':
+    #         # table만 입력
+    #         self.configItem['table'] = item[1]
+    #     # 최상위 항목이 Query인 경우
+    #     else:
+    #         # 정규표현식 패턴: 'from' 다음에 있는 단어를 추출
+    #         pattern = r'from\s+(\w+)'
+    #         # 정규표현식 패턴을 사용하여 문자열에서 원하는 부분을 추출
+    #         match =  re.search(pattern, item[1], re.IGNORECASE)
+    #         if match:
+    #             # 정규표현식 패턴에 매치되는 부분을 가져옴
+    #             table = match.group(3)
+    #             self.configItem['table'] = table
+    #         else:
+    #             self.configItem['table'] = ''
+
         
     def setMaxThreads(self,maxThreads):
         self.execItem['max_threads'] = maxThreads
@@ -65,48 +100,36 @@ class YmlConfig:
     def setMinOutputTasks(self, minOutputTasks):
         self.execItem['min_output_tasks'] = minOutputTasks
 
-def makeQuery(owner, table) -> str:
-    # 쿼리를 직접 입력받지 않으면, 선택한 객체로 구성
-    if query is None:
-        if cols is None:
-            cols = "*"
-        query = f"\"select {cols} from {owner}.{table}\""
-
-    # 쿼리를 직접 입력받으면, 수정하지 않고 그대로 리턴
-    return query
-
-def main(srcYmlConfig, tgtYmlConfig) -> YmlConfig:
+def exec(srcYmlConfig, tgtYmlConfig):
     # yml 파일 저장할 디렉토리 없으면 생성
     cm.createDir(cm.ROOT_PATH + r'\files\yml')
 
-    # 이관 대상 테이블 개수만큼 yml 파일 생성
-    for i in srcYmlConfig.table :
-        # 날짜_테이블명.yml 포맷으로 생성
-        ymlPath = fr'{cm.ROOT_PATH}\files\yml'
-        date = dt.datetime.now()
-        ymlPath += '\\' + i + '_' + date.strftime("%Y%m%d") + '.yml'
+    # 날짜_테이블명.yml 포맷으로 생성
+    ymlPath = fr'{cm.ROOT_PATH}\files\yml'
+    date = dt.datetime.now()
+    ymlPath += '\\' + srcYmlConfig.configItem['schema'] + '.' + srcYmlConfig.configItem['table'] + '_' + date.strftime("%Y%m%d") + '.yml'
 
-        # 파일 Open
-        f = open(ymlPath, 'w')
+    # 파일 Open
+    f = open(ymlPath, 'w')
 
-        # yml 파일 작성 - PARALLEL
-        f.write(f'exec:\n')
-        for k, v in srcYmlConfig.execItem.items():
+    # yml 파일 작성 - PARALLEL
+    f.write(f'exec:\n')
+    for k, v in srcYmlConfig.execItem.items():
+        f.write(f'  {k}: {v}\n')
+
+    # yml 파일 작성 - SOURCE DB 정보 
+    f.write(f'in:\n')
+    for k, v in srcYmlConfig.configItem.items():
+        if k != 'schema' and k != 'table':
             f.write(f'  {k}: {v}\n')
-
-        # yml 파일 작성 - SOURCE DB 정보 
-        f.write(f'in:\n')
-        for k, v in srcYmlConfig.configItem.items():
+    
+    # yml 파일 작성 - TARGET DB 정보 
+    f.write(f'\nout:\n')
+    for k, v in tgtYmlConfig.configItem.items():
+        if k != 'query':
             f.write(f'  {k}: {v}\n')
-        
-        # yml 파일 작성 - TARGET DB 정보 
-        f.write(f'\nout:\n')
-        for k, v in tgtYmlConfig.configItem.items():
-            f.write(f'  {k}: {v}\n')
-        
-        f.close()
-
-    return srcYmlConfig, tgtYmlConfig
+    
+    f.close()
 
 if __name__ == "__main__":
-    main()
+    exec()

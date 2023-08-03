@@ -2,6 +2,7 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtUiTools import QUiLoader
+import subprocess
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import module.common as cm
@@ -29,8 +30,6 @@ class SummaryWindow(QObject):
         self.treeMigTab = self.__bindQTreeWidget('treeViewMigTables')
         self.btnMakeYmlFile = self.__bindQPushButton('pushButtonMakeYmlFile')
         self.btnMakeYmlFile.clicked.connect(self.clickMakeYmlFile)             # Yml File 생성 버튼
-        self.btnShowYmlFile = self.__bindQPushButton('pushButtonShowYmlFile')
-        self.btnShowYmlFile.clicked.connect(self.clickShowYmlFile)             # Yml File 경로 열기 버튼
         self.btnPreview = self.__bindQPushButton('pushButtonPreview')
         self.btnPreview.clicked.connect(self.clickPreview)                     # Preview 버튼
         self.btnRun = self.__bindQPushButton('pushButtonRun')
@@ -59,29 +58,43 @@ class SummaryWindow(QObject):
         return btn
     
     def clickMakeYmlFile(self):        
-        # ================= Config 변수 셋팅 [START] ================================
-        srcYmlConfig = mkYml.YmlConfig()
-        tgtYmlConfig = mkYml.YmlConfig()
+        # Config 변수 셋팅
+        try:
+            srcYmlConfig = mkYml.YmlConfig()
+            tgtYmlConfig = mkYml.YmlConfig()
 
-        tableList = self.treeWidgetToList(self.treeMigTab)
+            tableList = self.treeWidgetToList(self.treeMigTab)
 
-        for i in tableList:
-            srcYmlConfig.setType(self.parent().srcType)
-            srcYmlConfig.setIp(self.parent().srcIp)
-            srcYmlConfig.setPort(self.parent().srcPort)
-            srcYmlConfig.setSid(self.parent().srcSid)
-            srcYmlConfig.setUser(self.parent().srcUser)
-            srcYmlConfig.setPw(self.parent().srcPw)
-            srcYmlConfig.setQuery(i)                    # 쿼리 형태로 저장
-            
-            tgtYmlConfig.setType(self.parent().tgtType)
-            tgtYmlConfig.setIp(self.parent().tgtIp)
-            tgtYmlConfig.setPort(self.parent().tgtPort)
-            tgtYmlConfig.setSid(self.parent().tgtSid)
-            tgtYmlConfig.setUser(self.parent().tgtUser)
-            tgtYmlConfig.setPw(self.parent().tgtPw)
-            tgtYmlConfig.setTable(i)                    # 테이블 형태로 저장
-        # ================= Config 변수 셋팅 [END] ================================
+            for i in tableList:
+                srcYmlConfig.setType(self.parent().srcType.currentText())
+                srcYmlConfig.setIp(self.parent().srcIp.text())
+                srcYmlConfig.setPort(self.parent().srcPort.text())
+                srcYmlConfig.setSid(self.parent().srcSid.text())
+                srcYmlConfig.setUser(self.parent().srcUser.text())
+                srcYmlConfig.setPw(self.parent().srcPw.text())
+                srcYmlConfig.setQuery(i)                    # 쿼리 형태로 저장
+                
+                tgtYmlConfig.setType(self.parent().tgtType.currentText())
+                tgtYmlConfig.setIp(self.parent().tgtIp.text())
+                tgtYmlConfig.setPort(self.parent().tgtPort.text())
+                tgtYmlConfig.setSid(self.parent().tgtSid.text())
+                tgtYmlConfig.setUser(self.parent().tgtUser.text())
+                tgtYmlConfig.setPw(self.parent().tgtPw.text())
+                tgtYmlConfig.setQuery(i)                    # 테이블 형태로 저장
+
+                # 셋팅 값으로 Yml 파일 생성
+                mkYml.exec(srcYmlConfig, tgtYmlConfig)
+            QMessageBox.information(
+                self.window, 'Message',
+                '파일이 생성되었습니다.',
+                QMessageBox.Ok
+            )
+        except:
+            QMessageBox.warning(
+                self.window, 'Message',
+                '파일 생성 실패',
+                QMessageBox.Ok
+            )
         
 
     def treeWidgetToList(self, treeWidget):
@@ -97,7 +110,7 @@ class SummaryWindow(QObject):
         itemText = item.text(0)
 
         if parentText:
-            fullText = parentText + "." + itemText
+            fullText = parentText + "__" + itemText
         else:
             fullText = itemText
 
@@ -108,9 +121,6 @@ class SummaryWindow(QObject):
                 self.processItem(childItem, result, fullText)
         else:
             result.append(fullText)
-
-    def clickShowYmlFile(self):
-        pass
 
     def clickPreview(self):
         pass

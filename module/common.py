@@ -8,8 +8,8 @@ def createDir(dir):
         os.makedirs(dir)
         print("Successed to create the directory.")
     
-    else:
-        print("Directory already exists.")
+    # else:
+    #     print("Directory already exists.")
 
 def execSql(cur, sql):
     pass

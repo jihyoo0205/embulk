@@ -79,24 +79,11 @@
     </property>
    </column>
   </widget>
-  <widget class="QPushButton" name="pushButtonShowYmlFile">
-   <property name="geometry">
-    <rect>
-     <x>330</x>
-     <y>60</y>
-     <width>121</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Show Yml File</string>
-   </property>
-  </widget>
   <widget class="QPushButton" name="pushButtonPreview">
    <property name="geometry">
     <rect>
      <x>330</x>
-     <y>90</y>
+     <y>60</y>
      <width>121</width>
      <height>23</height>
     </rect>
