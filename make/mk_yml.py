@@ -20,7 +20,7 @@ class YmlConfig:
         self.configItem['table'] = ''
         self.execItem['max_threads'] = 1
         self.execItem['min_output_tasks'] = 1
-        
+
         # TODO: type 별로 인자값 넣기
         self.setDriverPath('Oracle')
 
@@ -50,9 +50,10 @@ class YmlConfig:
     def setSid(self,sid):
         self.configItem['sid'] = sid
     
-    def setQuery(self, tableList):
-        # schema.table_name -> schema와 table명 분리
-        item = tableList.split("__")
+    def setQuery(self, str):
+        # schema__table_name -> schema와 table명 분리
+        item = str.split("__")
+
         # 최상위 항목이 스키마인 경우 Query 형태로 변환
         if item[0] != 'Query':
             self.configItem['schema'] = item[0]
@@ -97,16 +98,15 @@ def exec(srcYmlConfig, tgtYmlConfig):
     # yml 파일 작성 - SOURCE DB 정보 
     f.write(f'in:\n')
     for k, v in srcYmlConfig.configItem.items():
+        # SOURCE에는 schema, table 없이 query 항목만 작성
         if k != 'schema' and k != 'table':
             f.write(f'  {k}: {v}\n')
     
     # yml 파일 작성 - TARGET DB 정보 
     f.write(f'\nout:\n')
     for k, v in tgtYmlConfig.configItem.items():
+        # TARGET에는 query 항목 없이 schema, table만 작성
         if k != 'query':
             f.write(f'  {k}: {v}\n')
     
     f.close()
-
-if __name__ == "__main__":
-    exec()

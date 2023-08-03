@@ -2,7 +2,6 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtUiTools import QUiLoader
-import subprocess
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import module.common as cm
@@ -57,6 +56,7 @@ class SummaryWindow(QObject):
         btn = self.window.findChild(QPushButton, objectName)
         return btn
     
+    # ================================== yml 파일 생성 [START] ==================================
     def clickMakeYmlFile(self):        
         # Config 변수 셋팅
         try:
@@ -122,6 +122,7 @@ class SummaryWindow(QObject):
                 self.processItem(childItem, result, fullText)
         else:
             result.append(fullText)
+    # ================================== yml 파일 생성 [END] ==================================
 
     def clickPreview(self):
         pass
