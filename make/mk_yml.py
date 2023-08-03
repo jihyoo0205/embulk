@@ -11,10 +11,12 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
 class YmlConfig:
     def __init__(self):
+        # 변수 초기화
         self.execItem = {}
         self.configItem = {}
-        self.table = []
         self.query = ''
+        self.maxThreads = 1
+        self.minOutputTasks = 1
         
         # TODO: type 별로 인자값 넣기
         self.setDriverPath('Oracle')
@@ -27,14 +29,11 @@ class YmlConfig:
         elif type == 'MySQL':
             pass
 
-        else:
-            pass
-
     def setType(self, type):
         self.configItem['type'] = type
 
-    def setHost(self, host):
-        self.configItem['host'] = host
+    def setIp(self, ip):
+        self.configItem['ip'] = ip
     
     def setPort(self, port):
         self.configItem['port'] = port
@@ -42,20 +41,23 @@ class YmlConfig:
     def setUser(self, user):
         self.configItem['user'] = user
     
-    def setpasswd(self, passwd):
-        self.configItem['passwd'] = passwd
+    def setPw(self, pw):
+        self.configItem['pw'] = pw
 
-    def setDbName(self,dbName):
-        self.configItem['database'] = dbName
+    def setSid(self,sid):
+        self.configItem['sid'] = sid
     
-    def setQuery(self, schema, table):
-        self.query = f"\"select * from {schema}.{table}\""
+    def setQuery(self, tableList):
+        # schema.table_name -> schema와 table명 분리
+        item = tableList.split(".")
+        self.query = f"\"select * from {item[0]}.{item[1]}\""
         self.configItem['query'] = self.query
 
     def setTable(self, tableList):
-        item = tableList.split(',')
-        for i in item:
-            self.table.append(i.replace(" ", ""))
+        # schema.table_name -> schema와 table명 분리
+        item = tableList.split(".")
+        # table만 입력
+        self.configItem['table'] = item[1]
         
     def setMaxThreads(self,maxThreads):
         self.execItem['max_threads'] = maxThreads
@@ -63,33 +65,7 @@ class YmlConfig:
     def setMinOutputTasks(self, minOutputTasks):
         self.execItem['min_output_tasks'] = minOutputTasks
 
-    # GUI면 필요없음
-    def execConfig(self):
-        type = input('Input the type : ')
-        self.setType(type)
-        host = input('Input host IP : ')
-        self.setHost(host)
-        port = input('Input port number : ')
-        self.setPort(port)
-        dbName = input('Input name of database : ')
-        self.setDbName(dbName)
-        user = input('Input user to connect database : ')
-        self.setUser(user)
-        passwd = input('Input password of user : ')
-        self.setpasswd(passwd)
-        table = input('Input list of tables(ex: schema.a, schema.b ..) : ')
-        self.setTable(table)
-        maxThreads = input('Input maximum number of threads (default: 1) : ') or 1
-        self.setMaxThreads(maxThreads)
-        minOutputTasks = input('Input minimum number of output tasks (default: 1) : ') or 1
-        self.setMinOutputTasks(minOutputTasks)
-
-def makeQuery() -> str:
-    cols = input('columns: ')
-    owner = input('owner: ')
-    table = input('tables: ')
-    query = input('query: ') or None
-
+def makeQuery(owner, table) -> str:
     # 쿼리를 직접 입력받지 않으면, 선택한 객체로 구성
     if query is None:
         if cols is None:
@@ -99,24 +75,10 @@ def makeQuery() -> str:
     # 쿼리를 직접 입력받으면, 수정하지 않고 그대로 리턴
     return query
 
-def main() -> YmlConfig:
-    # SOURCE, TARGET Config 정보 변수
-    srcYmlConfig = YmlConfig()
-    tgtYmlConfig = YmlConfig()
-
-    # 대상 DB 정보 입력
-    print('\n*********************************************************')
-    print('Input Source Database Information')
-    print('*********************************************************\n')
-    srcYmlConfig.execConfig()
-
-    print('\n*********************************************************')
-    print('Input Target Database Information')
-    print('*********************************************************\n')
-    tgtYmlConfig.execConfig()
-
+def main(srcYmlConfig, tgtYmlConfig) -> YmlConfig:
     # yml 파일 저장할 디렉토리 없으면 생성
     cm.createDir(cm.ROOT_PATH + r'\files\yml')
+
     # 이관 대상 테이블 개수만큼 yml 파일 생성
     for i in srcYmlConfig.table :
         # 날짜_테이블명.yml 포맷으로 생성
@@ -131,10 +93,6 @@ def main() -> YmlConfig:
         f.write(f'exec:\n')
         for k, v in srcYmlConfig.execItem.items():
             f.write(f'  {k}: {v}\n')
-        
-        # schema.table_name -> schema와 table명 분리 // GUI면 필요 없음
-        tmpTable = i.split(".")
-        srcYmlConfig.setQuery(tmpTable[0], tmpTable[1])
 
         # yml 파일 작성 - SOURCE DB 정보 
         f.write(f'in:\n')

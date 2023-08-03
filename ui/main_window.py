@@ -35,13 +35,18 @@ class MainWindow(QObject):
         self.pbMinus = self.__bindQPushButton('pushButtonMinus')
         self.pbPlus.clicked.connect(self.copyItem)
         self.pbMinus.clicked.connect(self.removeItem)
+        self.btnConfirm = self.__bindQPushButton('pushButtonConfirm')
+        self.btnConfirm.clicked.connect(self.clickConfirm)
+        self.editQuery = self.__bindQPlainTextEdit('textEditQuery')
         # ================= 접속 정보 입력 및 접속 버튼 [START] ==================================
+        self.srcType = self.__bindQComboBox('comboBoxSrcDbms')             # Source DB Type
         self.srcIp = self.__bindQLineEdit('lineEditSrcHost')               # Source DB 접속 IP
         self.srcPort = self.__bindQLineEdit('lineEditSrcPort')             # Source DB 접속 Port
         self.srcSid = self.__bindQLineEdit('lineEditSrcDB')                # Source DB Name(SID)
         self.srcUser = self.__bindQLineEdit('lineEditSrcUser')             # Source DB 접속 유저
         self.srcPw = self.__bindQLineEdit('lineEditSrcPasswd')             # Source DB 접속 패스워드
         self.srcPw.setEchoMode(QLineEdit.Password)                         # Source 패스워드 마스킹
+        self.tgtType = self.__bindQComboBox('comboBoxTgtDbms')             # Target DB Type
         self.tgtIp = self.__bindQLineEdit('lineEditTgtHost')               # Target DB 접속 IP
         self.tgtPort = self.__bindQLineEdit('lineEditTgtPort')             # Target DB 접속 Port
         self.tgtSid = self.__bindQLineEdit('lineEditTgtDB')                # Target DB Name(SID)
@@ -55,6 +60,15 @@ class MainWindow(QObject):
         self.btnStart = self.__bindQPushButton('pushButtonStart')          # 버튼 클릭 시 실행될 함수 연결
         self.btnStart.clicked.connect(self.clickStart)                          # -> Start
         # ================= 접속 정보 입력 및 접속 버튼 [END] ==================================
+        
+        # 테스트 용도
+        self.srcUser.setText('mig')
+        self.srcPw.setText('mig')
+        self.srcIp.setText('51.51.102.101')
+        self.srcPort.setText('1521')
+        self.srcSid.setText('test01')
+
+
 
     def __bindQLineEdit(self, objectName):
         return self.window.findChild(QLineEdit, objectName)
@@ -272,26 +286,54 @@ class MainWindow(QObject):
                 srcTreeList.takeTopLevelItem(index)
     # ================= 트리 추가 제거 [END] ==================================
 
-    # 지워진 이력 확인. 용도 확인 필요.
-    def clickMoveItem(self):
-        sender = self.sender()
-        if self.pbPlus == sender:
-            srcTreeList = self.treeSrcTab
-            tgtTreeList = self.treeMigTab
-        else:
-            srcTreeList = self.treeMigTab
-            tgtTreeList = self.treeSrcTab
-        item = srcTreeList.takeTopLevelItem(srcTreeList.currentColumn())
-        root = QTreeWidget.invisibleRootItem(tgtTreeList)
-        root.addChild(item)
+    
+    # ================= 입력한 쿼리 트리에 넣기 [START] =============================
+    def clickConfirm(self):
+        text = self.editQuery.toPlainText()
+        parentItem = None
+        childItem = None
+        childExists = False
+        # Query 최상위항목이 있는지 검사
+        for i in range(self.treeMigTab.topLevelItemCount()):
+            item = self.treeMigTab.topLevelItem(i)
+            if item.text(0) == "Query":
+                parentItem = item
+                # 있으면 입력한 텍스트와 동일한 하위 항목이 있는지 검사
+                for j in range(parentItem.childCount()):
+                    childItem = parentItem.child(j)
+                    print(childItem.text(0))
+                    if childItem is not None and childItem.text(0) == text:
+                        childExists = True
+                        break
+                break
+        
+        # Query 최상위 항목을 찾지 못했다면 추가
+        if parentItem is None: 
+            parentItem = QTreeWidgetItem(self.treeMigTab, ["Query"])
+        # 하위 항목을 찾지 못했다면 입력한 텍스트로 추가
+        if not childExists:
+            childItem = QTreeWidgetItem(parentItem, [text])
+        # visible 설정
+        parentItem.setExpanded(True)
+    # ================= 입력한 쿼리 트리에 넣기 [START] =============================
 
-   # ================= Summary 창 띄우기 [START] ==================================
 
+    # ================= Summary 창 띄우기 [START] =============================
     def clickStart(self):
         summary = summaryWindow.SummaryWindow()
+        self.copyTree(self.treeMigTab, summary.treeMigTab)
         summary.setParent(self)
-    
-   # ================= Summary 창 띄우기 [END] ==================================
+    # ================= Summary 창 띄우기 [END] ===============================
+
+
+    # ================= TreeWidget 복사 [START] ===============================
+    def copyTree(self, srcTree, tgtTree):
+        count = srcTree.topLevelItemCount()
+        for i in range(count):
+            item = srcTree.topLevelItem(i)
+            clonedItem = item.clone()
+            tgtTree.addTopLevelItem(clonedItem)
+    # ================= TreeWidget 복사 [END] =================================
 
 def exec():
     app = QApplication(sys.argv)
