@@ -96,7 +96,7 @@ class SummaryWindow(QObject):
                 QMessageBox.Ok
             )
         
-
+    # 트리 형태를 리스트로 변환
     def treeWidgetToList(self, treeWidget):
         rootItems = [treeWidget.topLevelItem(i) for i in range(treeWidget.topLevelItemCount())]
         result = []
@@ -106,6 +106,7 @@ class SummaryWindow(QObject):
 
         return result
     
+    # __ 구분자 넣어서 schema__table 형태로 저장
     def processItem(self, item, result, parentText):
         itemText = item.text(0)
 

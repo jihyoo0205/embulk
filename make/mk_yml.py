@@ -20,7 +20,6 @@ class YmlConfig:
         self.configItem['table'] = ''
         self.execItem['max_threads'] = 1
         self.execItem['min_output_tasks'] = 1
-
         
         # TODO: type 별로 인자값 넣기
         self.setDriverPath('Oracle')
@@ -71,28 +70,6 @@ class YmlConfig:
             words = afterFrom.split('.')
             self.configItem['schema'] = words[0]
             self.configItem['table'] = words[1]
-                
-
-    # def setTable(self, tableList):
-    #     # schema.table_name -> schema와 table명 분리
-    #     item = tableList.split("__")
-    #     # 최상위 항목이 스키마인 경우
-    #     if item[0] != 'Query':
-    #         # table만 입력
-    #         self.configItem['table'] = item[1]
-    #     # 최상위 항목이 Query인 경우
-    #     else:
-    #         # 정규표현식 패턴: 'from' 다음에 있는 단어를 추출
-    #         pattern = r'from\s+(\w+)'
-    #         # 정규표현식 패턴을 사용하여 문자열에서 원하는 부분을 추출
-    #         match =  re.search(pattern, item[1], re.IGNORECASE)
-    #         if match:
-    #             # 정규표현식 패턴에 매치되는 부분을 가져옴
-    #             table = match.group(3)
-    #             self.configItem['table'] = table
-    #         else:
-    #             self.configItem['table'] = ''
-
         
     def setMaxThreads(self,maxThreads):
         self.execItem['max_threads'] = maxThreads

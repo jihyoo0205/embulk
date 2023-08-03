@@ -62,15 +62,6 @@ class MainWindow(QObject):
         self.connectYN = False                                             # connect 시 True
         # ================= 접속 정보 입력 및 접속 버튼 [END] ==================================
 
-        # 테스트 용도
-        self.srcUser.setText('mig')
-        self.srcPw.setText('mig')
-        self.srcIp.setText('51.51.102.101')
-        self.srcPort.setText('1521')
-        self.srcSid.setText('test01')
-
-
-
     def __bindQLineEdit(self, objectName):
         return self.window.findChild(QLineEdit, objectName)
     
