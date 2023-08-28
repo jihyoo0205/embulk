@@ -18,6 +18,7 @@ class YmlConfig:
         self.query = ''
         self.configItem['query'] = ''
         self.configItem['table'] = ''
+        self.configItem['partition'] = ''
         self.execItem['max_threads'] = 1
         self.execItem['min_output_tasks'] = 1
 
@@ -51,27 +52,43 @@ class YmlConfig:
         self.configItem['sid'] = sid
     
     def setQuery(self, str):
-        # schema__table_name -> schema와 table명 분리
+        # schema__table_name__partition -> schema, table명, partition명 분리
         item = str.split("__")
+        self.configItem['partition'] = ''
 
         # 최상위 항목이 스키마인 경우 Query 형태로 변환
         if item[0] != 'Query':
             self.configItem['schema'] = item[0]
             self.configItem['table'] = item[1]
-            # Query 형태로 저장
-            self.query = f"\"select * from {item[0]}.{item[1]}\""
+            
+            # 파티션이 있으면 파티션 구문 추가
+            if len(item) >= 3:
+                self.configItem['partition'] = item[2]
+                self.query = f"\"select * from {item[0]}.{item[1]} partition({item[2]})\""
+            else:
+                self.query = f"\"select * from {item[0]}.{item[1]}\""
+
             self.configItem['query'] = self.query
 
         # 최상위 항목이 Query인 경우
         else:
             self.configItem['query'] = f"\"{item[1]}\""
             # 'from' 다음의 문자열 추출
-            afterFrom = item[1].lower().split('from', 1)[1].strip()
+            fromMatch = re.search(r'from\s+(\w+\.\w+)[\s;]*', item[1])
+            if fromMatch:
+                tableTxt = fromMatch.group(1)
+
+            partitionIdx = item[1].find("partition")  # "partition" 문자열의 시작 인덱스 찾기
+            if partitionIdx != -1:
+                partitionTxt = item[1][partitionIdx + len("partition"):].strip()  # "partition" 다음 문자열부터 추출
+                partitionName = partitionTxt.split()[0].strip("();")  # 첫 번째 공백이나 괄호 이후 문자열 추출
+                print(partitionName)
+                self.configItem['partition'] = partitionName
             # '.'을 기준으로 단어 분리
-            words = afterFrom.split('.')
+            words = tableTxt.split('.')
             self.configItem['schema'] = words[0]
             self.configItem['table'] = words[1]
-        
+
     def setMaxThreads(self,maxThreads):
         self.execItem['max_threads'] = maxThreads
     
@@ -85,7 +102,10 @@ def exec(srcYmlConfig, tgtYmlConfig):
     # 날짜_테이블명.yml 포맷으로 생성
     ymlPath = fr'{cm.ROOT_PATH}\files\yml'
     date = dt.datetime.now()
-    ymlPath += '\\' + srcYmlConfig.configItem['schema'] + '.' + srcYmlConfig.configItem['table'] + '_' + date.strftime("%Y%m%d") + '.yml'
+    if srcYmlConfig.configItem['partition']: 
+        ymlPath += '\\' + srcYmlConfig.configItem['schema'] + '.' + srcYmlConfig.configItem['table'] + '.' + srcYmlConfig.configItem['partition'] +'_' + date.strftime("%Y%m%d") + '.yml'
+    else:
+        ymlPath += '\\' + srcYmlConfig.configItem['schema'] + '.' + srcYmlConfig.configItem['table'] + '_' + date.strftime("%Y%m%d") + '.yml'
 
     # 파일 Open
     f = open(ymlPath, 'w')
@@ -99,14 +119,14 @@ def exec(srcYmlConfig, tgtYmlConfig):
     f.write(f'in:\n')
     for k, v in srcYmlConfig.configItem.items():
         # SOURCE에는 schema, table 없이 query 항목만 작성
-        if k != 'schema' and k != 'table':
+        if k != 'schema' and k != 'table' and k != 'partition':
             f.write(f'  {k}: {v}\n')
     
     # yml 파일 작성 - TARGET DB 정보 
     f.write(f'\nout:\n')
     for k, v in tgtYmlConfig.configItem.items():
         # TARGET에는 query 항목 없이 schema, table만 작성
-        if k != 'query':
+        if k != 'query' and k != 'partition':
             f.write(f'  {k}: {v}\n')
     
     f.close()

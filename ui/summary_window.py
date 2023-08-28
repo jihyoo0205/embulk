@@ -89,10 +89,10 @@ class SummaryWindow(QObject):
                 '파일이 생성되었습니다.',
                 QMessageBox.Ok
             )
-        except:
+        except Exception as e:
             QMessageBox.warning(
                 self.window, 'Message',
-                '파일 생성 실패',
+                f'파일 생성 실패\n* {e}',
                 QMessageBox.Ok
             )
         
@@ -106,7 +106,7 @@ class SummaryWindow(QObject):
 
         return result
     
-    # __ 구분자 넣어서 schema__table 형태로 저장
+    # __ 구분자 넣어서 "schema__table__partition" 형태로 저장
     def processItem(self, item, result, parentText):
         itemText = item.text(0)
 
@@ -120,12 +120,21 @@ class SummaryWindow(QObject):
             for i in range(childCount):
                 childItem = item.child(i)
                 self.processItem(childItem, result, fullText)
+
+                # 파티션 항목 처리
+                grandchildCount = childItem.childCount()
+                if grandchildCount > 0:
+                    for j in range(grandchildCount):
+                        grandchildItem = childItem.child(j)
+                        self.processItem(grandchildItem, result, fullText + "__" + childItem.text(0))
         else:
             result.append(fullText)
     # ================================== yml 파일 생성 [END] ==================================
 
+    # ================================== Preview 수행 [START] ==================================
     def clickPreview(self):
         pass
+    # ================================== Preview 수행 [END] ==================================
 
     def clickRun(self):
         pass
