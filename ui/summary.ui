@@ -28,9 +28,9 @@
   <widget class="QPushButton" name="pushButtonRun">
    <property name="geometry">
     <rect>
-     <x>190</x>
+     <x>330</x>
      <y>450</y>
-     <width>75</width>
+     <width>121</width>
      <height>23</height>
     </rect>
    </property>
@@ -70,7 +70,7 @@
      <x>10</x>
      <y>30</y>
      <width>311</width>
-     <height>411</height>
+     <height>441</height>
     </rect>
    </property>
    <column>
@@ -83,7 +83,7 @@
    <property name="geometry">
     <rect>
      <x>330</x>
-     <y>60</y>
+     <y>90</y>
      <width>121</width>
      <height>23</height>
     </rect>
@@ -92,6 +92,104 @@
     <string>Preview</string>
    </property>
   </widget>
+  <widget class="QGroupBox" name="groupBoxMode">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>320</y>
+     <width>120</width>
+     <height>121</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Mode</string>
+   </property>
+   <widget class="QRadioButton" name="radioButtonMerge">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>100</y>
+      <width>90</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Merge</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButtonInsert">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>90</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Insert</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButtonDirect">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>90</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Direct Insert</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButtonReplace">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>80</y>
+      <width>90</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Replace</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButtonTrunc">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>90</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Trunc Insert</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="pushButtonShowDDL">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>60</y>
+     <width>121</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Show DDL</string>
+   </property>
+  </widget>
+  <zorder>groupBoxMode</zorder>
+  <zorder>pushButtonRun</zorder>
+  <zorder>labelMigTableList</zorder>
+  <zorder>pushButtonMakeYmlFile</zorder>
+  <zorder>treeViewMigTables</zorder>
+  <zorder>pushButtonPreview</zorder>
+  <zorder>pushButtonShowDDL</zorder>
  </widget>
  <resources/>
  <connections/>

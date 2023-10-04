@@ -33,7 +33,21 @@ class SummaryWindow(QObject):
         self.btnPreview.clicked.connect(self.clickPreview)                     # Preview 버튼
         self.btnRun = self.__bindQPushButton('pushButtonRun')
         self.btnRun.clicked.connect(self.clickRun)                             # Run 버튼
+        
+        # Radio Button 그룹 생성 - Mode
+        self.btnGroupMode = QButtonGroup()                                # Mode Radio Button 그룹
+        self.radioInsert = self.__bindObject(QRadioButton, 'radioButtonInsert')
+        self.radioDirect = self.__bindObject(QRadioButton, 'radioButtonDirect')
+        self.radioMerge = self.__bindObject(QRadioButton, 'radioButtonMerge')
+        self.radioTrunc = self.__bindObject(QRadioButton, 'radioButtonTrunc')
+        self.radioReplace = self.__bindObject(QRadioButton, 'radioButtonReplace')
+        self.btnGroupMode.addButton(self.radioInsert)
+        self.btnGroupMode.addButton(self.radioDirect)
+        self.btnGroupMode.addButton(self.radioMerge)
+        self.btnGroupMode.addButton(self.radioTrunc)
+        self.btnGroupMode.addButton(self.radioReplace)
 
+        
     def __bindQLineEdit(self, objectName):
         return self.window.findChild(QLineEdit, objectName)
     
@@ -57,44 +71,57 @@ class SummaryWindow(QObject):
         return btn
     
     # ================================== yml 파일 생성 [START] ==================================
-    def clickMakeYmlFile(self):        
-        # Config 변수 셋팅
-        try:
-            srcYmlConfig = mkYml.YmlConfig()
-            tgtYmlConfig = mkYml.YmlConfig()
-
-            tableList = self.treeWidgetToList(self.treeMigTab)
-
-            for i in tableList:
-                srcYmlConfig.setType(self.parent().srcType.currentText())
-                srcYmlConfig.setIp(self.parent().srcIp.text())
-                srcYmlConfig.setPort(self.parent().srcPort.text())
-                srcYmlConfig.setSid(self.parent().srcSid.text())
-                srcYmlConfig.setUser(self.parent().srcUser.text())
-                srcYmlConfig.setPw(self.parent().srcPw.text())
-                srcYmlConfig.setQuery(i)                    # 쿼리 형태로 저장
-                
-                tgtYmlConfig.setType(self.parent().tgtType.currentText())
-                tgtYmlConfig.setIp(self.parent().tgtIp.text())
-                tgtYmlConfig.setPort(self.parent().tgtPort.text())
-                tgtYmlConfig.setSid(self.parent().tgtSid.text())
-                tgtYmlConfig.setUser(self.parent().tgtUser.text())
-                tgtYmlConfig.setPw(self.parent().tgtPw.text())
-                tgtYmlConfig.setQuery(i)                    # 테이블 형태로 저장
-
-                # 셋팅 값으로 Yml 파일 생성
-                mkYml.exec(srcYmlConfig, tgtYmlConfig)
-            QMessageBox.information(
-                self.window, 'Message',
-                '파일이 생성되었습니다.',
-                QMessageBox.Ok
-            )
-        except Exception as e:
+    def clickMakeYmlFile(self):
+        # Mode 변수 받아오기
+        selectedMode = self.btnGroupMode.checkedButton()
+        # Mode 선택 안 되어있으면 에러
+        if not selectedMode:
             QMessageBox.warning(
-                self.window, 'Message',
-                f'파일 생성 실패\n* {e}',
-                QMessageBox.Ok
-            )
+                    self.window, 'Message',
+                    'Insert Mode를 선택해주세요.',
+                    QMessageBox.Ok
+                )
+        
+        # Mode 클릭 돼있을 때만 수행
+        else:
+            # Config 변수 셋팅
+            try:
+                srcYmlConfig = mkYml.YmlConfig()
+                tgtYmlConfig = mkYml.YmlConfig()
+
+                tableList = self.treeWidgetToList(self.treeMigTab)
+
+                for i in tableList:
+                    srcYmlConfig.setType(self.parent().srcType.currentText())
+                    srcYmlConfig.setIp(self.parent().srcIp.text())
+                    srcYmlConfig.setPort(self.parent().srcPort.text())
+                    srcYmlConfig.setSid(self.parent().srcSid.text())
+                    srcYmlConfig.setUser(self.parent().srcUser.text())
+                    srcYmlConfig.setPw(self.parent().srcPw.text())
+                    srcYmlConfig.setQuery(i)                    # 쿼리 형태로 저장
+                    
+                    tgtYmlConfig.setType(self.parent().tgtType.currentText())
+                    tgtYmlConfig.setIp(self.parent().tgtIp.text())
+                    tgtYmlConfig.setPort(self.parent().tgtPort.text())
+                    tgtYmlConfig.setSid(self.parent().tgtSid.text())
+                    tgtYmlConfig.setUser(self.parent().tgtUser.text())
+                    tgtYmlConfig.setPw(self.parent().tgtPw.text())
+                    tgtYmlConfig.setQuery(i)                    # 테이블 형태로 저장
+                    tgtYmlConfig.setMode(selectedMode.text())
+
+                    # 셋팅 값으로 Yml 파일 생성
+                    mkYml.exec(srcYmlConfig, tgtYmlConfig)
+                QMessageBox.information(
+                    self.window, 'Message',
+                    '파일이 생성되었습니다.',
+                    QMessageBox.Ok
+                )
+            except Exception as e:
+                QMessageBox.warning(
+                    self.window, 'Message',
+                    f'파일 생성 실패\n* {e}',
+                    QMessageBox.Ok
+                )
         
     # 트리 형태를 리스트로 변환
     def treeWidgetToList(self, treeWidget):
@@ -133,7 +160,7 @@ class SummaryWindow(QObject):
 
     # ================================== Preview 수행 [START] ==================================
     def clickPreview(self):
-        pass
+        os.system(fr"embulk preview {cm.ROOT_PATH}\files\yml\MIG.TEST01_20230828.yml")
     # ================================== Preview 수행 [END] ==================================
 
     def clickRun(self):

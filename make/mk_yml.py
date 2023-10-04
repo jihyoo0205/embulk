@@ -1,6 +1,6 @@
 # Embulk yml 파라미터
 # oracle : https://www.rubydoc.info/gems/embulk-input-oracle/0.10.1
-#          https://www.rubydoc.info/gems/embulk-output-oracle/0.8.7
+#          https://www.rubydoc.info/gems/embulk-output-oracle/0.8.6
 # mysql  : 
 import datetime as dt
 import sys
@@ -19,6 +19,7 @@ class YmlConfig:
         self.configItem['query'] = ''
         self.configItem['table'] = ''
         self.configItem['partition'] = ''
+        self.configItem['mode'] = 'insert'
         self.execItem['max_threads'] = 1
         self.execItem['min_output_tasks'] = 1
 
@@ -34,10 +35,10 @@ class YmlConfig:
             pass
 
     def setType(self, type):
-        self.configItem['type'] = type
+        self.configItem['type'] = type.lower()
 
-    def setIp(self, ip):
-        self.configItem['ip'] = ip
+    def setIp(self, host):
+        self.configItem['host'] = host
     
     def setPort(self, port):
         self.configItem['port'] = port
@@ -45,11 +46,11 @@ class YmlConfig:
     def setUser(self, user):
         self.configItem['user'] = user
     
-    def setPw(self, pw):
-        self.configItem['pw'] = pw
+    def setPw(self, password):
+        self.configItem['password'] = password
 
-    def setSid(self,sid):
-        self.configItem['sid'] = sid
+    def setSid(self,database):
+        self.configItem['database'] = database
     
     def setQuery(self, str):
         # schema__table_name__partition -> schema, table명, partition명 분리
@@ -58,8 +59,8 @@ class YmlConfig:
 
         # 최상위 항목이 스키마인 경우 Query 형태로 변환
         if item[0] != 'Query':
-            self.configItem['schema'] = item[0]
-            self.configItem['table'] = item[1]
+            self.configItem['schema'] = item[0].upper()
+            self.configItem['table'] = item[1].upper()
             
             # 파티션이 있으면 파티션 구문 추가
             if len(item) >= 3:
@@ -86,14 +87,30 @@ class YmlConfig:
                 self.configItem['partition'] = partitionName
             # '.'을 기준으로 단어 분리
             words = tableTxt.split('.')
-            self.configItem['schema'] = words[0]
-            self.configItem['table'] = words[1]
+            self.configItem['schema'] = words[0].upper()
+            self.configItem['table'] = words[1].upper()
 
     def setMaxThreads(self,maxThreads):
         self.execItem['max_threads'] = maxThreads
     
     def setMinOutputTasks(self, minOutputTasks):
         self.execItem['min_output_tasks'] = minOutputTasks
+    
+    def setMode(self, mode):
+        self.resMode = ''
+
+        if mode == 'Insert':
+            self.resMode = 'insert'
+        elif mode == 'Direct Insert':
+            self.resMode = 'insert_direct'
+        elif mode == 'Trunc Insert':
+            self.resMode = 'insert_trunc'
+        elif mode == 'Replace':
+            self.resMode = 'replace'
+        elif mode == 'Merge':
+            self.resMode = 'merge'
+        
+        self.configItem['mode'] = self.resMode
 
 def exec(srcYmlConfig, tgtYmlConfig):
     # yml 파일 저장할 디렉토리 없으면 생성
@@ -118,8 +135,8 @@ def exec(srcYmlConfig, tgtYmlConfig):
     # yml 파일 작성 - SOURCE DB 정보 
     f.write(f'in:\n')
     for k, v in srcYmlConfig.configItem.items():
-        # SOURCE에는 schema, table 없이 query 항목만 작성
-        if k != 'schema' and k != 'table' and k != 'partition':
+        # SOURCE에는 schema, table, mode 없이 query 항목만 작성
+        if k != 'schema' and k != 'table' and k != 'partition' and k != 'mode':
             f.write(f'  {k}: {v}\n')
     
     # yml 파일 작성 - TARGET DB 정보 
