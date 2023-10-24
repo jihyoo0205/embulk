@@ -31,6 +31,8 @@ class MainWindow(QObject):
     def setupUi(self):
         self.treeSrcTab = self.__bindQTreeWidget('treeViewSrcTables')
         self.treeMigTab = self.__bindQTreeWidget('treeViewMigTables')
+        self.treeSrcTab.setSelectionMode(QTreeView.ExtendedSelection)
+        self.treeMigTab.setSelectionMode(QTreeView.ExtendedSelection)
         self.pbPlus = self.__bindQPushButton('pushButtonPlus')
         self.pbMinus = self.__bindQPushButton('pushButtonMinus')
         self.pbPlus.clicked.connect(self.copyItem)

@@ -104,7 +104,7 @@ class YmlConfig:
         elif mode == 'Direct Insert':
             self.resMode = 'insert_direct'
         elif mode == 'Trunc Insert':
-            self.resMode = 'insert_trunc'
+            self.resMode = 'truncate_insert'
         elif mode == 'Replace':
             self.resMode = 'replace'
         elif mode == 'Merge':

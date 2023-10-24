@@ -2,16 +2,17 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtUiTools import QUiLoader
-import sys, os
+import sys, os, subprocess
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import module.common as cm
-import cx_Oracle
 import make.mk_yml as mkYml
-import ui.main_window as mainWindow
+import ui.preview_log_window as previewLogWindow
+import module.print_log as printLog
 
 os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1' # 디스플레이 설정에 따라 변하게
 UI_FILE_PATH = fr"{cm.ROOT_PATH}\ui\summary.ui"
 
+# UI 클래스
 class SummaryWindow(QObject):
     def __init__(self, parent=None):
         super(SummaryWindow, self).__init__(parent)
@@ -27,15 +28,16 @@ class SummaryWindow(QObject):
 
     def setupUi(self):
         self.treeMigTab = self.__bindQTreeWidget('treeViewMigTables')
+        self.treeMigTab.setSelectionMode(QTreeView.ExtendedSelection)
         self.btnMakeYmlFile = self.__bindQPushButton('pushButtonMakeYmlFile')
-        self.btnMakeYmlFile.clicked.connect(self.clickMakeYmlFile)             # Yml File 생성 버튼
+        self.btnMakeYmlFile.clicked.connect(self.clickMakeYmlFile)              # Yml File 생성 버튼
         self.btnPreview = self.__bindQPushButton('pushButtonPreview')
-        self.btnPreview.clicked.connect(self.clickPreview)                     # Preview 버튼
+        self.btnPreview.clicked.connect(self.clickPreview)                      # Preview 버튼
         self.btnRun = self.__bindQPushButton('pushButtonRun')
-        self.btnRun.clicked.connect(self.clickRun)                             # Run 버튼
+        self.btnRun.clicked.connect(self.clickRun)                              # Run 버튼
         
         # Radio Button 그룹 생성 - Mode
-        self.btnGroupMode = QButtonGroup()                                # Mode Radio Button 그룹
+        self.btnGroupMode = QButtonGroup()                                      # Mode Radio Button 그룹
         self.radioInsert = self.__bindObject(QRadioButton, 'radioButtonInsert')
         self.radioDirect = self.__bindObject(QRadioButton, 'radioButtonDirect')
         self.radioMerge = self.__bindObject(QRadioButton, 'radioButtonMerge')
@@ -46,7 +48,6 @@ class SummaryWindow(QObject):
         self.btnGroupMode.addButton(self.radioMerge)
         self.btnGroupMode.addButton(self.radioTrunc)
         self.btnGroupMode.addButton(self.radioReplace)
-
         
     def __bindQLineEdit(self, objectName):
         return self.window.findChild(QLineEdit, objectName)
@@ -69,7 +70,8 @@ class SummaryWindow(QObject):
     def __bindQPushButton(self, objectName):
         btn = self.window.findChild(QPushButton, objectName)
         return btn
-    
+
+
     # ================================== yml 파일 생성 [START] ==================================
     def clickMakeYmlFile(self):
         # Mode 변수 받아오기
@@ -160,7 +162,32 @@ class SummaryWindow(QObject):
 
     # ================================== Preview 수행 [START] ==================================
     def clickPreview(self):
-        os.system(fr"embulk preview {cm.ROOT_PATH}\files\yml\MIG.TEST01_20230828.yml")
+        # 그냥 다돌려 다
+        # 선택해서 위 요약엔 성공 실패 아래엔 상세로그 식으로 남겨야겠다
+        dirPath = fr"{cm.ROOT_PATH}\files\yml"
+        # 로그 창 띄우기
+        preLogWindow = previewLogWindow.PreviewLogWindow()
+        preLogWindow.setParent(self)
+        printCmdLog = printLog.RunCommand()
+        try:
+            file_list = os.listdir(dirPath)
+            
+            for file in file_list:
+                print(file)
+                file_name = file.split('.')
+                # 확장자가 .yml 인 파일만 수행
+                if file_name[2].lower() == 'yml':
+                    command = fr"C:\Users\YJH\.embulk\bin\embulk preview {cm.ROOT_PATH}\files\yml\{file}"
+                    printCmdLog.appendQueue(command)
+            printCmdLog.runCommands()
+            # printCmdLog.command_thread.command_output.connect(self.updateOutput)
+                    
+
+        except FileNotFoundError:
+            print(f"디렉토리를 찾을 수 없음: {dirPath}")
+        except Exception as e:
+            print(f"오류 발생: {e}")
+        
     # ================================== Preview 수행 [END] ==================================
 
     def clickRun(self):
